@@ -190,7 +190,7 @@ class PetViewModel: ObservableObject {
         
         pet!.health = 0.5 // Revive with half health
         pet!.adaCoins -= 100
-        savePet()
+        savePet(self.pet)
     }
     
     func resetGame() {
