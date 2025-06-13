@@ -5,9 +5,10 @@ class MathMinigameViewModel: ObservableObject {
     
     @Published var question: String = ""
     @Published var answerChoices: [Int] = []
+    @Published var score: Int = 0
     
     private var correctAnswer: Int = 0
-    var onGameEnd: ((_ wasCorrect: Bool) -> Void)?
+    var onGameEnd: ((_ finalScore: Int) -> Void)?
     
     init() {
         generateNewQuestion()
@@ -49,8 +50,17 @@ class MathMinigameViewModel: ObservableObject {
     }
     
     func checkAnswer(_ selectedAnswer: Int) {
-        let wasCorrect = selectedAnswer == correctAnswer
-        // We call the completion handler to notify the parent view
-        onGameEnd?(wasCorrect)
+        if selectedAnswer == correctAnswer {
+            score += 10 // Give 10 points for a correct answer
+            generateNewQuestion()
+        } else {
+            // For now, just generate a new question on wrong answer
+            // Later we can add negative feedback
+            generateNewQuestion()
+        }
+    }
+    
+    func finishGame() {
+        onGameEnd?(score)
     }
 } 

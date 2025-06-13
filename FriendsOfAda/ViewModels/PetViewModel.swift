@@ -72,6 +72,7 @@ class PetViewModel: ObservableObject {
     
     func addHappinessPoints(_ points: Int) {
         pet.happinessPoints += points
+        pet.adaCoins += points // Also award AdaCoins
         checkForLevelUp()
     }
     
@@ -86,19 +87,41 @@ class PetViewModel: ObservableObject {
     // MARK: - Interaction Methods
     
     func feed() {
-        pet.hunger = min(1.0, pet.hunger + 0.3)
-        addHappinessPoints(10)
+        if pet.foodCount > 0 {
+            pet.foodCount -= 1
+            pet.hunger = min(1.0, pet.hunger + 0.3)
+            addHappinessPoints(10)
+        } else {
+            // Optionally, we can give feedback to the user that they are out of food.
+        }
     }
     
     func giveWater() {
-        pet.thirst = min(1.0, pet.thirst + 0.3)
-        addHappinessPoints(10)
+        if pet.waterCount > 0 {
+            pet.waterCount -= 1
+            pet.thirst = min(1.0, pet.thirst + 0.3)
+            addHappinessPoints(10)
+        } else {
+            // Optionally, we can give feedback to the user that they are out of water.
+        }
     }
     
-    func playGame() {
-        pet.energy = min(1.0, pet.energy + 0.2)
-        pet.love = min(1.0, pet.love + 0.2)
-        addHappinessPoints(25) // Winning a game gives more points
+    // MARK: - Shop Methods
+    
+    func buyFood() {
+        let foodCost = 15
+        if pet.adaCoins >= foodCost {
+            pet.adaCoins -= foodCost
+            pet.foodCount += 1
+        }
+    }
+    
+    func buyWater() {
+        let waterCost = 10
+        if pet.adaCoins >= waterCost {
+            pet.adaCoins -= waterCost
+            pet.waterCount += 1
+        }
     }
     
     // MARK: - Test/Debug Methods
