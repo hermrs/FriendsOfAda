@@ -28,7 +28,8 @@ enum PetType: String, Codable, CaseIterable {
     }
 }
 
-struct Pet: Codable {
+struct Pet: Codable, Identifiable {
+    var id: UUID = UUID()
     var name: String
     var petType: PetType
     var color: CodableColor
@@ -66,7 +67,9 @@ struct Pet: Codable {
         case gameHearts, lastHeartRefillTimestamp
     }
     
+    // Custom init for creating a new pet
     init(id: UUID = UUID(), name: String, petType: PetType, color: CodableColor) {
+        self.id = id
         self.name = name
         self.petType = petType
         self.color = color
@@ -75,5 +78,51 @@ struct Pet: Codable {
         self.adaCoins = 100
         self.gameHearts = 3
         self.lastHeartRefillTimestamp = Date()
+    }
+    
+    // Manual implementation of Decodable
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(UUID.self, forKey: .id)
+        self.name = try container.decode(String.self, forKey: .name)
+        self.petType = try container.decode(PetType.self, forKey: .petType)
+        self.color = try container.decode(CodableColor.self, forKey: .color)
+        self.level = try container.decode(Int.self, forKey: .level)
+        self.happinessPoints = try container.decode(Int.self, forKey: .happinessPoints)
+        self.health = try container.decode(Double.self, forKey: .health)
+        self.hunger = try container.decode(Double.self, forKey: .hunger)
+        self.thirst = try container.decode(Double.self, forKey: .thirst)
+        self.hygiene = try container.decode(Double.self, forKey: .hygiene)
+        self.love = try container.decode(Double.self, forKey: .love)
+        self.energy = try container.decode(Double.self, forKey: .energy)
+        self.lastUpdateTimestamp = try container.decode(Date.self, forKey: .lastUpdateTimestamp)
+        self.foodCount = try container.decode(Int.self, forKey: .foodCount)
+        self.waterCount = try container.decode(Int.self, forKey: .waterCount)
+        self.adaCoins = try container.decode(Int.self, forKey: .adaCoins)
+        self.gameHearts = try container.decode(Int.self, forKey: .gameHearts)
+        self.lastHeartRefillTimestamp = try container.decode(Date.self, forKey: .lastHeartRefillTimestamp)
+    }
+    
+    // Manual implementation of Encodable
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(petType, forKey: .petType)
+        try container.encode(color, forKey: .color)
+        try container.encode(level, forKey: .level)
+        try container.encode(happinessPoints, forKey: .happinessPoints)
+        try container.encode(health, forKey: .health)
+        try container.encode(hunger, forKey: .hunger)
+        try container.encode(thirst, forKey: .thirst)
+        try container.encode(hygiene, forKey: .hygiene)
+        try container.encode(love, forKey: .love)
+        try container.encode(energy, forKey: .energy)
+        try container.encode(lastUpdateTimestamp, forKey: .lastUpdateTimestamp)
+        try container.encode(foodCount, forKey: .foodCount)
+        try container.encode(waterCount, forKey: .waterCount)
+        try container.encode(adaCoins, forKey: .adaCoins)
+        try container.encode(gameHearts, forKey: .gameHearts)
+        try container.encode(lastHeartRefillTimestamp, forKey: .lastHeartRefillTimestamp)
     }
 } 
