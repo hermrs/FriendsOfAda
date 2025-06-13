@@ -1,7 +1,41 @@
 import Foundation
+import SwiftUI
+
+// A simple Codable wrapper for Color
+struct CodableColor: Codable, Hashable {
+    var red: Double
+    var green: Double
+    var blue: Double
+    
+    var swiftUIColor: Color {
+        Color(red: red, green: green, blue: blue)
+    }
+}
+
+enum PetType: String, Codable, CaseIterable {
+    case dog = "dog"
+    case cat = "cat"
+    case bird = "bird"
+    case rabbit = "rabbit"
+    
+    var iconName: String {
+        switch self {
+        case .dog: return "dog.fill"
+        case .cat: return "cat.fill"
+        case .bird: return "bird.fill"
+        case .rabbit: return "hare.fill" // SF Symbols has a hare for rabbit
+        }
+    }
+}
 
 struct Pet: Codable {
     var name: String
+    var petType: PetType
+    var color: CodableColor
+    
+    // Health System
+    var health: Double = 1.0 // 1.0 is full health, 0.0 is game over
+    var lastUpdateTimestamp: Date = Date()
     
     // Progress
     var level: Int = 1

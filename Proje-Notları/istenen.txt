@@ -104,6 +104,36 @@ Pet Shop Arayüzü: Puanlarla alışveriş yapılabilecek dükkan arayüzünü v
 
 Diğer Mini Oyunların Eklenmesi: Labirent ve Şekil Eşleştirme gibi diğer oyunları sisteme dahil edin.
 
+5. Geliştirme İlerlemesi ve Tamamlanan Görevler (13.06.2025 itibarıyla)
+
+Proje, belirtilen fazlara ve ek geri bildirimlere uygun olarak önemli ölçüde ilerlemiştir. Temel oynanış döngüsü tamamlanmış ve tüm sistemler birbiriyle entegre bir şekilde çalışır durumdadır.
+
+**Tamamlanan Faz 1 Görevleri (Temel Çekirdek):**
+*   **Proje Yapısı:** GDD'ye uygun olarak modern bir MVVM (Model-View-ViewModel) klasör yapısı (`Models`, `Views`, `ViewModels`) oluşturuldu.
+*   **İhtiyaçlar Sistemi:** `Pet` modeli ve hayvanın ihtiyaçlarını (`Açlık`, `Susuzluk` vb.) zamanla dinamik olarak düşüren `PetViewModel` başarıyla geliştirildi.
+*   **Temel Etkileşimler:** Oyuncunun hayvanı beslemesini ve su vermesini sağlayan temel mekanikler tamamlandı.
+*   **Veri Kalıcılığı:** `UserDefaults` entegrasyonu ile oyuncunun tüm ilerlemesi (hayvanın durumu, seviyesi, envanteri) uygulama kapatılıp açıldığında korunmaktadır.
+
+**Tamamlanan Faz 2 Görevleri (Mini Oyunlar):**
+*   **"Matematik Konservesi":** Tekrar oynanabilir, skor üreten ve ödül veren bir mini oyun olarak geliştirildi.
+*   **"Hafıza Kartları":** 2x2'lik bir eşleştirme oyunu olarak geliştirildi ve ana oyuna entegre edildi.
+*   **UI/UX Geliştirmesi:** Ana oyun ekranı, ihtiyaç göstergeleri, butonlar ve menüler ilk GDD'ye uygun olarak ve ek kullanıcı geri bildirimleri (kaydırılabilir ekran, gruplanmış elementler) doğrultusunda kodlanmıştır.
+
+**Tamamlanan Faz 3 Görevleri (İlerleme Sistemi):**
+*   **Puan ve Seviye Sistemi:** Oyuncunun eylemlerinden "Mutluluk Puanı" kazanmasını ve bu puanlarla seviye atlamasını sağlayan sistem tamamlandı.
+*   **Kilitlenebilir İçerik:** "Pet Shop", "Park" ve "Veteriner" gibi mekanların oyuncu seviyesine göre kilitlenip açılması sağlandı.
+*   **Pet Shop ve Ekonomi:**
+    *   "AdaCoin" adlı oyun içi para birimi sisteme eklendi.
+    *   Mama ve su gibi kaynaklar envantere bağlı hale getirildi.
+    *   Oyuncuların kazandıkları coin'lerle alışveriş yapabilecekleri Pet Shop arayüzü ve işlevselliği geliştirildi.
+
+**Eklenen Gelişmiş Özellikler ve İyileştirmeler:**
+*   **Harita Entegrasyonu (MapKit):** Oyuncuların seviye atladıklarında açılan "Park" mekanında, evcil hayvanlarını gerçek dünya haritası üzerinde gezdirebildikleri bir modül eklendi. Yürünen mesafeye göre oyuncu ödüllendirilmektedir. Bu özellik için `CoreLocation` ve `MapKit` entegrasyonu tamamlandı.
+*   **Gelişmiş Test Kontrolleri:** Geliştirme ve test sürecini hızlandırmak amacıyla, tek dokunuşla tüm oyun verilerini silen ve uygulamayı başlangıç (hayvan yaratma) ekranına döndüren bir "Reset" butonu eklendi.
+*   **Hata Düzeltmeleri:** Uygulama genelinde karşılaşılan ve potansiyel çökmelere neden olabilecek tüm "optional" değer hataları ve uyarılar giderilerek kod kararlılığı artırıldı.
+
+Proje, şu anda yeni görsel/işitsel varlıkların ve kalan mini oyunların entegrasyonu için hazır durumdadır.
+
 4. Son Notlar
 
 Ekip olarak bu projenin sadece bir kodlama görevi olmadığını, aynı zamanda çocukların gelişimine olumlu etki edecek bir ürün yarattığımızı unutmamalıyız. Lütfen geliştirme sürecinde GDD'deki (Oyun Tasarım Dokümanı) görsel ve işitsel tarza sadık kalmaya özen gösterin. Tüm sanat ve ses varlıkları ilgili birimler tarafından size sağlanacaktır.
