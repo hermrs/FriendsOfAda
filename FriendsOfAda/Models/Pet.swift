@@ -7,6 +7,11 @@ struct Pet: Codable {
     var level: Int = 1
     var happinessPoints: Int = 0
     
+    // Inventory & Currency
+    var adaCoins: Int = 0
+    var foodCount: Int = 5
+    var waterCount: Int = 5
+    
     // Needs are represented as values between 0.0 (empty) and 1.0 (full)
     var hunger: Double = 1.0
     var thirst: Double = 1.0
