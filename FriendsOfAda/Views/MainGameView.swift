@@ -6,6 +6,7 @@ struct MainGameView: View {
     @State private var showingMemoryGame = false // State for memory game
     @State private var showingPetShop = false // State for Pet Shop
     @State private var showingWalkView = false // State for Walk View
+    @State private var showingVeterinarian = false
     
     var body: some View {
         // Only show the main content if a pet exists.
@@ -13,8 +14,26 @@ struct MainGameView: View {
             ZStack {
                 ScrollView {
                     VStack(spacing: 20) {
-                        Text("Ada's Friend: \(pet.name)")
-                            .font(.largeTitle)
+                        // Header
+                        HStack {
+                            Text("Ada's Friend: \(pet.name)")
+                                .font(.largeTitle)
+                            Spacer()
+                            // Currency and Hearts display
+                            VStack(alignment: .trailing) {
+                                HStack {
+                                    Image(systemName: "bitcoinsign.circle.fill")
+                                    Text("\(pet.adaCoins)")
+                                }
+                                .font(.title2)
+                                HStack {
+                                    Image(systemName: "heart.fill")
+                                        .foregroundColor(.red)
+                                    Text("\(pet.gameHearts)/3")
+                                }
+                                .font(.headline)
+                            }
+                        }
                         
                         Text("Level: \(pet.level)")
                             .font(.title2)
@@ -90,7 +109,7 @@ struct MainGameView: View {
                                 Button(action: {
                                     viewModel.takeShower()
                                 }) {
-                                    Text("Take Shower")
+                                    Text("Yıka")
                                         .padding()
                                         .background(Color.teal)
                                         .foregroundColor(.white)
@@ -100,25 +119,29 @@ struct MainGameView: View {
                             
                             // Button to launch the math mini-game
                             Button(action: {
+                                viewModel.useGameHeart()
                                 showingMathGame = true
                             }) {
                                 Text("Play Math Game")
                                     .padding()
-                                    .background(Color.purple)
+                                    .background(pet.gameHearts > 0 ? Color.purple : Color.gray)
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
                             }
+                            .disabled(pet.gameHearts <= 0)
                             
                             // Button to launch the memory mini-game
                             Button(action: {
+                                viewModel.useGameHeart()
                                 showingMemoryGame = true
                             }) {
                                 Text("Play Memory Game")
                                     .padding()
-                                    .background(Color.orange)
+                                    .background(pet.gameHearts > 0 ? Color.orange : Color.gray)
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
                             }
+                            .disabled(pet.gameHearts <= 0)
                         }
                         
                         // Unlocked Locations
@@ -132,7 +155,9 @@ struct MainGameView: View {
                                 LocationButton(name: "Park", icon: "pawprint.circle.fill", requiredLevel: 3, currentLevel: pet.level) {
                                     showingWalkView = true
                                 }
-                                LocationButton(name: "Veterinarian", icon: "cross.case.fill", requiredLevel: 4, currentLevel: pet.level) {}
+                                LocationButton(name: "Veterinarian", icon: "cross.case.fill", requiredLevel: 4, currentLevel: pet.level) {
+                                    showingVeterinarian = true
+                                }
                             }
                         }
                         .padding(.top)
@@ -143,33 +168,12 @@ struct MainGameView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             HStack {
-                                Button("+50 HP") {
-                                    viewModel.addHappinessPoints(50)
-                                }
-                                .font(.caption)
-                                .padding(8)
-                                .background(Color.gray.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                                
-                                Button("Seviye Atla") {
-                                    viewModel.forceLevelUp()
-                                }
-                                .font(.caption)
-                                .padding(8)
-                                .background(Color.gray.opacity(0.7))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                                
-                                Button("Reset") {
-                                    viewModel.resetGame()
-                                }
-                                .font(.caption)
-                                .padding(8)
-                                .background(Color.red.opacity(0.8))
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
+                                Button("+50 HP") { viewModel.addHappinessPoints(50) }
+                                Button("Seviye Atla") { viewModel.forceLevelUp() }
+                                Button("+1000 Coin") { viewModel.addDebugCoins() }
+                                Button("Reset") { viewModel.resetGame() }
                             }
+                            .buttonStyle(TestButtonStyle())
                         }
                         .padding(.top, 10)
                         
@@ -213,24 +217,14 @@ struct MainGameView: View {
             }
             .sheet(isPresented: $showingMathGame) {
                 MathMinigameView { score in
-                    viewModel.addHappinessPoints(score)
-                    // Also give some energy and love for playing
-                    if viewModel.pet != nil {
-                        viewModel.pet!.energy = min(1.0, viewModel.pet!.energy + 0.2)
-                        viewModel.pet!.love = min(1.0, viewModel.pet!.love + 0.1)
-                    }
+                    viewModel.addHappinessPoints(score) // Keep happiness for playing
+                    viewModel.addAdaCoins(score * 3)   // Add coins based on score
                 }
             }
             .sheet(isPresented: $showingMemoryGame) {
-                MemoryGameView { wasCorrect in
-                    if wasCorrect {
-                        // Give a fixed amount of points for memory game for now
-                        viewModel.addHappinessPoints(20)
-                        if viewModel.pet != nil {
-                            viewModel.pet!.energy = min(1.0, viewModel.pet!.energy + 0.2)
-                            viewModel.pet!.love = min(1.0, viewModel.pet!.love + 0.1)
-                        }
-                    }
+                MemoryGameView {
+                    viewModel.addHappinessPoints(10) // Give a fixed amount of HP
+                    viewModel.addAdaCoins(5)      // And a fixed amount of coins
                 }
             }
             .sheet(isPresented: $showingPetShop) {
@@ -240,6 +234,12 @@ struct MainGameView: View {
                 WalkView { distance in
                     viewModel.walkPet(distanceInMeters: distance)
                 }
+            }
+            .sheet(isPresented: $showingVeterinarian) {
+                VeterinarianView(viewModel: viewModel)
+            }
+            .onAppear {
+                viewModel.refillHearts()
             }
         } else {
             // Show a loading view if the pet data is not yet available
@@ -314,6 +314,19 @@ struct NeedView: View {
         } else {
             return .red
         }
+    }
+}
+
+// A style for test buttons to reduce repetition
+struct TestButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.caption)
+            .padding(8)
+            .background(Color.gray.opacity(0.7))
+            .foregroundColor(.white)
+            .cornerRadius(8)
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
     }
 }
 

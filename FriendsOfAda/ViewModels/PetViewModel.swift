@@ -103,8 +103,13 @@ class PetViewModel: ObservableObject {
     func addHappinessPoints(_ points: Int) {
         guard pet != nil else { return }
         pet?.happinessPoints += points
-        pet?.adaCoins += points // Also award AdaCoins
+        // Game rewards are now handled separately
         checkForLevelUp()
+    }
+    
+    func addAdaCoins(_ amount: Int) {
+        guard pet != nil else { return }
+        pet?.adaCoins += amount
     }
     
     private func checkForLevelUp() {
@@ -135,6 +140,7 @@ class PetViewModel: ObservableObject {
     func lovePet() {
         guard pet != nil else { return }
         pet!.love = min(1.0, pet!.love + 0.25)
+        pet!.energy = max(0, pet!.energy - 0.05) // Loving interaction consumes a little energy
         addHappinessPoints(15)
     }
     
@@ -183,6 +189,11 @@ class PetViewModel: ObservableObject {
         // but for a direct level up, this is fine.
     }
     
+    func addDebugCoins() {
+        guard pet != nil else { return }
+        pet?.adaCoins += 1000
+    }
+    
     // MARK: - Game Over and Revival
     
     func revive() {
@@ -191,6 +202,34 @@ class PetViewModel: ObservableObject {
         pet!.health = 0.5 // Revive with half health
         pet!.adaCoins -= 100
         savePet(self.pet)
+    }
+    
+    // MARK: - Game Play Hearts
+    
+    func refillHearts() {
+        guard pet != nil else { return }
+        
+        let hoursPassed = Calendar.current.dateComponents([.hour], from: pet!.lastHeartRefillTimestamp, to: Date()).hour ?? 0
+        let heartsToRefill = hoursPassed / 24
+        
+        if heartsToRefill > 0 {
+            pet!.gameHearts = min(3, pet!.gameHearts + heartsToRefill)
+            pet!.lastHeartRefillTimestamp = Date()
+        }
+    }
+    
+    func useGameHeart() {
+        guard pet != nil, pet!.gameHearts > 0 else { return }
+        pet!.gameHearts -= 1
+    }
+    
+    // MARK: - Veterinarian
+    
+    func healPet(percentage: Double, cost: Int) {
+        guard pet != nil, pet!.adaCoins >= cost else { return }
+        
+        pet!.adaCoins -= cost
+        pet!.health = min(1.0, pet!.health + percentage)
     }
     
     func resetGame() {

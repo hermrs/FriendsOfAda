@@ -5,20 +5,31 @@ class MemoryGameViewModel: ObservableObject {
     
     @Published var cards: [MemoryCard] = []
     @Published var moves: Int = 0
-    
+    @Published var consecutiveWins: Int = 0
+    @Published var cardCount: Int = 4 // Start with 4 cards (2x2)
+
     private var indexOfFirstFlippedCard: Int?
-    var onGameEnd: ((_ wasCorrect: Bool) -> Void)?
+    var onGameWon: (() -> Void)?
     
-    // Using SF Symbols for card content for now
-    private let cardContents = ["tortoise.fill", "hare.fill", "ant.fill", "ladybug.fill"]
+    // Using SF Symbols for card content
+    private let cardContents = ["tortoise.fill", "hare.fill", "ant.fill", "ladybug.fill", "fish.fill", "bird.fill"]
     
     init() {
         startNewGame()
     }
     
     func startNewGame() {
-        // For a 2x2 grid, we need 2 pairs (4 cards total)
-        let neededPairs = 2
+        // Reset game state
+        moves = 0
+        indexOfFirstFlippedCard = nil
+        
+        // Difficulty logic
+        if consecutiveWins > 0 && consecutiveWins % 3 == 0 {
+            // After every 3 wins, increase difficulty up to a max of 12 cards
+            cardCount = min(12, cardCount + 2)
+        }
+        
+        let neededPairs = cardCount / 2
         let contentForGame = Array(cardContents.prefix(neededPairs))
         
         var gameCards: [MemoryCard] = []
@@ -28,49 +39,53 @@ class MemoryGameViewModel: ObservableObject {
         }
         
         cards = gameCards.shuffled()
-        moves = 0
     }
     
     func choose(card: MemoryCard) {
-        // Find the index of the chosen card
-        guard let chosenIndex = cards.firstIndex(where: { $0.id == card.id }) else { return }
-        
-        // Ignore if the card is already flipped or matched
-        if cards[chosenIndex].isFlipped || cards[chosenIndex].isMatched {
+        guard let chosenIndex = cards.firstIndex(where: { $0.id == card.id }),
+              !cards[chosenIndex].isFlipped,
+              !cards[chosenIndex].isMatched else {
             return
         }
         
         moves += 1
         
         if let potentialMatchIndex = indexOfFirstFlippedCard {
-            // A second card is flipped, check for a match
+            // Second card flipped
             cards[chosenIndex].isFlipped = true
             
             if cards[chosenIndex].content == cards[potentialMatchIndex].content {
                 // It's a match!
                 cards[chosenIndex].isMatched = true
                 cards[potentialMatchIndex].isMatched = true
-            }
-            
-            indexOfFirstFlippedCard = nil // Reset for the next turn
-            
-        } else {
-            // This is the first card being flipped in a turn
-            // Flip all other cards down
-            for index in cards.indices {
-                if !cards[index].isMatched {
-                    cards[index].isFlipped = false
+            } else {
+                // Not a match, flip them back after a delay
+                let firstIndex = potentialMatchIndex
+                let secondIndex = chosenIndex
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) {
+                    self.cards[firstIndex].isFlipped = false
+                    self.cards[secondIndex].isFlipped = false
                 }
             }
+            
+            indexOfFirstFlippedCard = nil
+        } else {
+            // First card flipped
             indexOfFirstFlippedCard = chosenIndex
             cards[chosenIndex].isFlipped = true
         }
         
         // Check if game is over
-        if cards.allSatisfy({ $0.isMatched }) {
-            // Use a slight delay to let the user see the last match
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                self.onGameEnd?(true)
+        // Use a slight delay to let the user see the last match
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            if self.cards.allSatisfy({ $0.isMatched }) {
+                self.consecutiveWins += 1
+                self.onGameWon?() // Notify the parent view of the win
+                
+                // Start a new game after a short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                    self.startNewGame()
+                }
             }
         }
     }
@@ -79,7 +94,7 @@ class MemoryGameViewModel: ObservableObject {
 // Data model for a single card
 struct MemoryCard: Identifiable {
     let id = UUID()
-    let content: String // e.g., the name of the SF Symbol
+    let content: String
     var isFlipped = false
     var isMatched = false
 } 

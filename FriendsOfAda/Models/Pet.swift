@@ -42,9 +42,13 @@ struct Pet: Codable {
     var happinessPoints: Int = 0
     
     // Inventory & Currency
-    var adaCoins: Int = 0
     var foodCount: Int = 5
     var waterCount: Int = 5
+    var adaCoins: Int = 100 // Start with 100 coins
+    
+    // Mini-game life system
+    var gameHearts: Int = 3
+    var lastHeartRefillTimestamp: Date = Date()
     
     // Needs are represented as values between 0.0 (empty) and 1.0 (full)
     var hunger: Double = 1.0
@@ -52,4 +56,24 @@ struct Pet: Codable {
     var hygiene: Double = 1.0
     var love: Double = 1.0
     var energy: Double = 1.0 // Represents both play and sleep needs
+    
+    // CodingKeys, init, etc.
+    enum CodingKeys: String, CodingKey {
+        case id, name, petType, color, level, happinessPoints
+        case health, hunger, thirst, hygiene, love, energy
+        case lastUpdateTimestamp
+        case foodCount, waterCount, adaCoins
+        case gameHearts, lastHeartRefillTimestamp
+    }
+    
+    init(id: UUID = UUID(), name: String, petType: PetType, color: CodableColor) {
+        self.name = name
+        self.petType = petType
+        self.color = color
+        self.foodCount = 5
+        self.waterCount = 5
+        self.adaCoins = 100
+        self.gameHearts = 3
+        self.lastHeartRefillTimestamp = Date()
+    }
 } 

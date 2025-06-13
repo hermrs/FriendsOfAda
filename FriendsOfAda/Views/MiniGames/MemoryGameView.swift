@@ -4,45 +4,63 @@ struct MemoryGameView: View {
     @StateObject private var viewModel = MemoryGameViewModel()
     @Environment(\.dismiss) private var dismiss
     
-    var onGameComplete: (Bool) -> Void
+    // This callback is now only for winning a round
+    var onGameWin: () -> Void
     
-    // Define a 2-column grid
-    private let columns: [GridItem] = [
-        GridItem(.flexible(), spacing: 16),
-        GridItem(.flexible(), spacing: 16)
-    ]
+    // Dynamically create grid columns based on card count
+    private var columns: [GridItem] {
+        // For 6 cards, use a 2-column layout. For more, maybe 3.
+        let columnCount = viewModel.cardCount > 4 ? 3 : 2
+        return Array(repeating: .init(.flexible()), count: columnCount)
+    }
     
     var body: some View {
-        VStack {
-            Text("Hafıza Kartları")
-                .font(.largeTitle)
-                .fontWeight(.bold)
+        VStack(spacing: 16) {
+            HStack {
+                Text("Hafıza Kartları")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                Spacer()
+                Button("Kapat") {
+                    dismiss()
+                }
+                .padding(.horizontal)
+                .padding(.vertical, 8)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(10)
+            }
             
-            Text("Hamle: \(viewModel.moves)")
-                .font(.title2)
+            HStack {
+                Text("Hamle: \(viewModel.moves)")
+                Spacer()
+                Text("Seri: \(viewModel.consecutiveWins)")
+            }
+            .font(.title2)
             
+            // Re-calculable grid
             LazyVGrid(columns: columns, spacing: 16) {
                 ForEach(viewModel.cards) { card in
-                    CardView(card: card)
+                    CardView(card: card, cardCount: viewModel.cardCount)
                         .onTapGesture {
                             viewModel.choose(card: card)
                         }
                 }
             }
-            .padding()
             
-            Button("Yeni Oyun") {
-                viewModel.startNewGame()
+            if viewModel.cards.allSatisfy({ $0.isMatched }) && !viewModel.cards.isEmpty {
+                Text("Tebrikler, kazandınız!")
+                    .font(.title)
+                    .foregroundColor(.green)
+                    .transition(.scale)
             }
-            .padding()
             
             Spacer()
         }
         .padding()
         .onAppear {
-            viewModel.onGameEnd = { wasCorrect in
-                onGameComplete(wasCorrect)
-                dismiss()
+            // Set up the callback for when a game is won
+            viewModel.onGameWon = {
+                onGameWin()
             }
         }
     }
@@ -51,6 +69,7 @@ struct MemoryGameView: View {
 // Represents a single card view
 struct CardView: View {
     let card: MemoryCard
+    let cardCount: Int // Pass card count for aspect ratio
     
     var body: some View {
         ZStack {
@@ -68,13 +87,13 @@ struct CardView: View {
                 shape.fill().foregroundColor(.blue)
             }
         }
-        .aspectRatio(1, contentMode: .fit) // Make the card a square
+        .aspectRatio(cardCount > 4 ? 0.66 : 1, contentMode: .fit) // Make cards rectangular for larger grids
     }
 }
 
 
 struct MemoryGameView_Previews: PreviewProvider {
     static var previews: some View {
-        MemoryGameView(onGameComplete: { _ in })
+        MemoryGameView(onGameWin: {})
     }
 }
