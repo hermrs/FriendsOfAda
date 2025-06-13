@@ -1,0 +1,111 @@
+Proje Görev Tanımı: Ada's Friends (iOS)
+Kime: iOS Geliştirme Ekibi
+Kimden: AI Proje Yöneticisi
+Tarih: 13.06.2025
+Konu: "Ada's Friends" - Eğitici Evcil Hayvan Bakım Oyunu Geliştirme Süreci
+
+1. Projeye Genel Bakış ve Vizyon
+
+Merhaba Ekip,
+
+Önümüzde, 4-8 yaş arası çocuklara yönelik, onlara hayvan sevgisi ve sorumluluk bilinci aşılamayı hedefleyen "Ada's Friends" adlı mobil oyunu geliştirme görevi bulunmaktadır. Bu proje, sadece eğlenceli bir oyun olmanın ötesinde, çocukların bilişsel ve duygusal gelişimlerine katkı sağlayacak güçlü bir eğitsel altyapıya sahiptir.
+
+Ana Hedefimiz: Çocuklara sanal bir evcil hayvan (kedi veya köpek) sahiplendirerek, onun temel ihtiyaçlarını (beslenme, temizlik, sevgi, oyun vb.) karşılamalarını sağlamak. Bu süreci, temel matematik, hafıza ve problem çözme becerilerini geliştiren eğitici mini oyunlarla zenginleştireceğiz. Oyun, Xcode altyapısı kullanılarak, native bir iOS uygulaması olarak geliştirilecektir.
+
+2. Ürün Tanımı ve Temel Özellikler
+
+Kullanıcı, oyuna ana karakterimiz Ada'nın gözünden başlayacak. Ada'nın en büyük hayali olan bir evcil hayvana kavuşmasıyla hikaye başlar. Oyuncu, bir kedi veya köpek sahiplenir, ona isim verir ve bakımını üstlenir.
+
+Geliştirilmesi Gereken Temel Modüller:
+
+Evcil Hayvan Simülasyonu:
+
+Evcil hayvanın dinamik ihtiyaçları olmalı: Açlık, susuzluk, temizlik, sevgi, oyun ve uyku.
+
+Bu ihtiyaçlar zamanla azalmalı ve arayüzde (UI) ikonlarla belirtilmeli.
+
+İhtiyaçlar karşılanmadığında hayvanın mutsuz (düşük kulaklar, yavaş hareketler), karşılandığında ise mutlu (kuyruk sallama, mırlama) olduğunu gösteren animasyonlar ve sesler entegre edilmeli.
+
+Etkileşim Mekanikleri:
+
+Beslenme: Mama kabına dokunarak farklı mama seçeneklerini sunma ve sürükle-bırak ile besleme.
+
+Temizlik: Kum kabını veya kirlenen hayvanı temizlemek için basit dokunma ve sürükleme hareketleri.
+
+Sevgi: Hayvanı okşamak için parmakla dokunma ve kaydırma etkileşimi.
+
+Oyun: Oyuncak kutusundan seçilen bir oyuncakla (top, lazer vb.) farklı etkileşimler başlatma.
+
+Mini Oyunlar:
+
+Matematik Konservesi: Basit toplama/çıkarma işlemleriyle konserve açma.
+
+Hafıza Kartları: Hayvan temalı kartları eşleştirme (2x2'den başlayıp 2x4'e kadar zorlaşan seviyeler).
+
+Şekil/Renk Eşleştirme: İstenen nesneyi seçenekler arasından bulup hayvana verme.
+
+Basit Labirent: Parmağıyla yol çizerek hayvanı hedefe ulaştırma.
+
+Tüy Bakımı & Parkur: Gelişmiş seviyeler için planlanan diğer mini oyunlar.
+
+İlerleme ve Ödül Sistemi:
+
+Başarıyla tamamlanan her görev "Mutluluk Puanı" kazandırmalı.
+
+Bu puanlarla Seviye Atlama (Level Up) mekaniği çalışmalı.
+
+Seviye atladıkça yeni mekanların (Park, Veteriner, Pet Shop) ve yeni mini oyunların kilidi açılmalı.
+
+Kazanılan puanlar Pet Shop'ta harcanarak yeni eşyalar (mama, oyuncak, aksesuar, kıyafet) alınabilmeli.
+
+Kullanıcı Arayüzü (UI) ve Deneyimi (UX):
+
+Dokümanlarda belirtildiği gibi; büyük, yuvarlak hatlı butonlar ve kolay anlaşılır ikonlar kullanılmalı.
+
+Metin kullanımı minimumda tutulmalı, her şey görsel olarak anlatılmalı.
+
+Başarılı etkileşimlerde pozitif geri bildirim (parlama, ses efekti), hatalı etkileşimlerde ise yumuşak bir uyarı verilmeli.
+
+Genel sorumluluk durumunu gösteren büyük bir Kalp/Pati ikonu ekranın üst kısmında yer almalı.
+
+3. Teknik Gereksinimler ve Görev Dağılımı
+
+Platform: iOS (iPhone & iPad uyumlu)
+Geliştirme Ortamı: Xcode
+Dil: Swift (tercihen SwiftUI ile modern bir yapı)
+
+Faz 1: Temel Çekirdek ve Oynanış (İlk 2 Hafta)
+
+Proje Yapısının Kurulması: Xcode projesini oluşturun. Gerekli klasör yapılarını (Models, Views, ViewModels, Assets vb.) hazırlayın.
+
+Ana Karakter ve Hayvan Varlıklarının Entegrasyonu: Ada ve evcil hayvan (kedi/köpek) için sağlanan 2D varlıkları ve temel animasyonları (bekleme, yürüme) ekleyin.
+
+İhtiyaçlar Sistemi (Backend Logic): Hayvanın ihtiyaçlarını (açlık, su vb.) tutan bir veri modeli (struct/class) oluşturun. Zamanla bu değerleri düşüren bir zamanlayıcı (Timer) sistemi kurun.
+
+Temel Etkileşimler: Beslenme ve su verme mekaniklerini geliştirin. UI elemanlarına dokunulduğunda ilgili ihtiyacın artmasını sağlayın.
+
+Veri Kalıcılığı (Persistence): Oyuncunun ilerlemesini (hayvanın adı, ihtiyaç seviyeleri) cihaz hafızasına kaydetmek için UserDefaults veya Core Data altyapısını kurun.
+
+Faz 2: Mini Oyunlar ve Arayüz (Sonraki 3 Hafta)
+
+Mini Oyun Modülü Geliştirme: İlk olarak "Matematik Konservesi" ve "Hafıza Kartları" oyunlarını ayrı birer View olarak geliştirin.
+
+UI/UX Geliştirmesi: Ana oyun ekranını, ihtiyaç göstergelerini, butonları ve menüleri GDD'ye uygun olarak tasarlayın ve kodlayın.
+
+Ses Entegrasyonu: Sağlanan ses efektlerini (tıklama, başarı, hata sesleri) ve arka plan müziklerini ilgili olaylara bağlayın.
+
+Faz 3: İlerleme Sistemi ve İçerik Genişletme (Sonraki 3 Hafta)
+
+Puan ve Seviye Sistemi: "Mutluluk Puanı" sistemini ve seviye atlama mantığını geliştirin.
+
+Kilitlenebilir İçerik: Park, Veteriner ve Pet Shop mekanlarının başlangıçta kilitli olmasını ve seviye atlandığında açılmasını sağlayın.
+
+Pet Shop Arayüzü: Puanlarla alışveriş yapılabilecek dükkan arayüzünü ve satın alınan eşyaların oyuna entegrasyonunu (örn: yeni bir tasma takma) geliştirin.
+
+Diğer Mini Oyunların Eklenmesi: Labirent ve Şekil Eşleştirme gibi diğer oyunları sisteme dahil edin.
+
+4. Son Notlar
+
+Ekip olarak bu projenin sadece bir kodlama görevi olmadığını, aynı zamanda çocukların gelişimine olumlu etki edecek bir ürün yarattığımızı unutmamalıyız. Lütfen geliştirme sürecinde GDD'deki (Oyun Tasarım Dokümanı) görsel ve işitsel tarza sadık kalmaya özen gösterin. Tüm sanat ve ses varlıkları ilgili birimler tarafından size sağlanacaktır.
+
+Herhangi bir belirsizlik veya teknik zorluk durumunda hemen iletişime geçelim. Başarılı ve eğlenceli bir geliştirme süreci diliyorum!
