@@ -62,13 +62,13 @@ struct MapView: UIViewRepresentable {
 
 
 struct WalkView: View {
-    @StateObject private var locationManager = LocationManager()
+    @StateObject private var locationManager = LocationManager.shared // Use the shared instance
     @State private var isWalking = false
     @Environment(\.dismiss) private var dismiss
     
     @State private var region = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 37.334_900, longitude: -122.009_020), // Default location
-        span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        center: CLLocationCoordinate2D(latitude: 37.334_900, longitude: -122.009_020),
+        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005) // Zoom in a bit more
     )
     
     // Callback to pass the result to the parent view
@@ -86,7 +86,8 @@ struct WalkView: View {
                 .edgesIgnoringSafeArea(.bottom)
 
             VStack {
-                Text(String(format: "Mesafe: %.0f metre", locationManager.distance))
+                let distanceInKm = locationManager.distance / 1000.0
+                Text(String(format: "Mesafe: %.1f km", distanceInKm))
                     .font(.title2)
                     .padding(.top)
                 
@@ -125,7 +126,10 @@ struct WalkView: View {
             .background(Color(.systemBackground)) // Add a background to separate from map
         }
         .onAppear {
-            locationManager.requestPermission()
+            // Center the map on the user's current location when the view appears
+            if let userLocation = locationManager.lastLocation?.coordinate {
+                region.center = userLocation
+            }
         }
         .onChange(of: locationManager.lastLocation) { newLocation in
             // When location updates, center the map on the new location

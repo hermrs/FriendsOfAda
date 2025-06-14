@@ -3,6 +3,9 @@ import CoreLocation
 import Combine
 
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    
+    static let shared = LocationManager() // Singleton instance
+    
     private let manager = CLLocationManager()
     
     @Published var locationStatus: CLAuthorizationStatus?
@@ -12,7 +15,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     private var lastLocationForDistanceCalc: CLLocation?
     
-    override init() {
+    private override init() { // Make init private
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest

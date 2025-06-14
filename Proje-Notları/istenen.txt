@@ -132,6 +132,17 @@ Proje, belirtilen fazlara ve ek geri bildirimlere uygun olarak önemli ölçüde
 *   **Gelişmiş Test Kontrolleri:** Geliştirme ve test sürecini hızlandırmak amacıyla, tek dokunuşla tüm oyun verilerini silen ve uygulamayı başlangıç (hayvan yaratma) ekranına döndüren bir "Reset" butonu eklendi.
 *   **Hata Düzeltmeleri:** Uygulama genelinde karşılaşılan ve potansiyel çökmelere neden olabilecek tüm "optional" değer hataları ve uyarılar giderilerek kod kararlılığı artırıldı.
 
+**Oyun Mekanikleri ve Dengeleme Güncellemesi (13.06.2025):**
+*   **Veteriner Mekaniği:** Oyuncular artık 4. seviyede açılan veteriner kliniğinde, oyun içi para birimi (`AdaCoin`) karşılığında evcil hayvanlarının canını doldurabilirler. (%10, %50, %100 seçenekleri eklendi).
+*   **Mini Oyun "Can" Sistemi:** Oyuncuların mini oyunları oynamak için kullanabileceği, 24 saatte bir yenilenen 3 adet "can" (kalp) hakkı sisteme eklendi. Bu mekanik, oyun içi ekonomiyi dengelemektedir.
+*   **Ekonomi ve Dengeleme:**
+    *   Mini oyunlardan kazanılan `AdaCoin` miktarları yeniden dengelendi.
+    *   Oyuncular artık oyuna 100 `AdaCoin` ile başlamaktadır.
+    *   "Sevme" etkileşimi artık bir miktar enerji tüketmektedir.
+*   **Arayüz İyileştirmeleri:** Ana oyun ekranına oyuncunun mevcut `AdaCoin` ve "can" miktarını gösteren yeni arayüz elemanları eklendi.
+*   **Hafıza Oyunu Geliştirmesi:** Hafıza oyunu artık tekrar oynanabilir bir yapıya sahip. Her 3 galibiyette bir zorluk seviyesi (kart sayısı) artmaktadır.
+*   **Kritik Hata Düzeltmesi:** `Pet` veri modelindeki, oyunun kaydedilip yüklenmesini engelleyen `Codable` uyumluluk hatası giderilerek projenin stabilizasyonu sağlandı.
+
 Proje, şu anda yeni görsel/işitsel varlıkların ve kalan mini oyunların entegrasyonu için hazır durumdadır.
 
 4. Son Notlar
