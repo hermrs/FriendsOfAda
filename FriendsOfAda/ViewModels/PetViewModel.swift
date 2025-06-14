@@ -5,6 +5,7 @@ class PetViewModel: ObservableObject {
     @Published var pet: Pet?
     
     private var timer: Timer?
+    private var energyRegenerationTimer: Timer?
     private var cancellables = Set<AnyCancellable>() // To hold subscriptions
     
     private let userDefaultsKey = "savedPet"
@@ -13,6 +14,11 @@ class PetViewModel: ObservableObject {
         self.pet = Self.loadPet()
         
         startNeedsDecay()
+        
+        // If the app was closed while energy was regenerating, restart it
+        if let pet = pet, pet.energy <= 0 {
+            startEnergyRegeneration()
+        }
         
         // Save the pet's state whenever it changes
         $pet
@@ -24,6 +30,7 @@ class PetViewModel: ObservableObject {
     
     deinit {
         timer?.invalidate()
+        energyRegenerationTimer?.invalidate()
     }
     
     func startNeedsDecay() {
@@ -68,6 +75,10 @@ class PetViewModel: ObservableObject {
         
         if healthDecayAmount > 0 {
             pet!.health = max(0, pet!.health - healthDecayAmount)
+        }
+        
+        if pet!.energy <= 0 {
+            startEnergyRegeneration()
         }
     }
     
@@ -138,16 +149,27 @@ class PetViewModel: ObservableObject {
     }
     
     func lovePet() {
-        guard pet != nil else { return }
-        pet!.love = min(1.0, pet!.love + 0.25)
-        pet!.energy = max(0, pet!.energy - 0.05) // Loving interaction consumes a little energy
+        guard let pet = pet, energyRegenerationTimer == nil else { return }
+        
+        self.pet!.love = min(1.0, pet.love + 0.25)
+        self.pet!.energy = max(0, pet.energy - 0.05) // Loving interaction consumes a little energy
         addHappinessPoints(15)
+        
+        if self.pet!.energy <= 0 {
+            startEnergyRegeneration()
+        }
     }
     
     func takeShower() {
-        guard pet != nil else { return }
-        pet!.hygiene = min(1.0, pet!.hygiene + 0.4)
+        guard let pet = pet, energyRegenerationTimer == nil else { return }
+        
+        self.pet!.hygiene = min(1.0, pet.hygiene + 0.4)
+        self.pet!.energy = max(0, pet.energy - 0.1) // Showering also consumes energy
         addHappinessPoints(5)
+        
+        if self.pet!.energy <= 0 {
+            startEnergyRegeneration()
+        }
     }
     
     func calculateWalkReward(distanceInMeters: Double) -> (coins: Int, happiness: Int) {
@@ -158,12 +180,15 @@ class PetViewModel: ObservableObject {
     
     func walkPet(distanceInMeters: Double) {
         guard pet != nil else { return }
+        
+        // Stop energy regeneration if we are walking, as it restores energy
+        stopEnergyRegeneration()
+        
         let reward = calculateWalkReward(distanceInMeters: distanceInMeters)
         
         addHappinessPoints(reward.happiness)
         addAdaCoins(reward.coins)
         
-        // Walking also restores some energy
         pet!.energy = min(1.0, pet!.energy + (distanceInMeters / 1000.0) * 0.1) // More distance, more energy
     }
     
@@ -228,6 +253,13 @@ class PetViewModel: ObservableObject {
     func useGameHeart() {
         guard pet != nil, pet!.gameHearts > 0 else { return }
         pet!.gameHearts -= 1
+        
+        // Playing a game also costs energy
+        guard energyRegenerationTimer == nil else { return }
+        pet!.energy = max(0, pet!.energy - 0.15)
+        if pet!.energy <= 0 {
+            startEnergyRegeneration()
+        }
     }
     
     // MARK: - Veterinarian
@@ -247,6 +279,45 @@ class PetViewModel: ObservableObject {
         
         // Set the current pet to nil, which will trigger the UI to go back to the creation screen.
         self.pet = nil
+    }
+    
+    // MARK: - Energy Regeneration
+    
+    private func startEnergyRegeneration() {
+        // Don't start a new timer if one is already running or if energy is not zero
+        guard energyRegenerationTimer == nil, let pet = pet, pet.energy <= 0 else { return }
+        
+        let maxEnergy = 1.0
+        let regenerationDuration = 300.0 // 5 minutes in seconds
+        let energyPerSecond = maxEnergy / regenerationDuration
+        
+        energyRegenerationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let self = self, var pet = self.pet else {
+                timer.invalidate()
+                return
+            }
+            
+            // If energy was restored by other means, stop the timer
+            if pet.energy > 0 {
+                self.stopEnergyRegeneration()
+                return
+            }
+
+            pet.energy += energyPerSecond
+            
+            if pet.energy >= maxEnergy {
+                pet.energy = maxEnergy
+                self.pet = pet
+                self.stopEnergyRegeneration()
+            } else {
+                self.pet = pet
+            }
+        }
+    }
+    
+    private func stopEnergyRegeneration() {
+        energyRegenerationTimer?.invalidate()
+        energyRegenerationTimer = nil
     }
     
     // Other interaction methods will be added here

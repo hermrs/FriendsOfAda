@@ -105,6 +105,7 @@ struct MainGameView: View {
                                         .foregroundColor(.white)
                                         .cornerRadius(10)
                                 }
+                                .disabled(pet.energy <= 0)
                                 
                                 Button(action: {
                                     viewModel.takeShower()
@@ -115,6 +116,7 @@ struct MainGameView: View {
                                         .foregroundColor(.white)
                                         .cornerRadius(10)
                                 }
+                                .disabled(pet.energy <= 0)
                             }
                             
                             // Button to launch the math mini-game
@@ -124,11 +126,11 @@ struct MainGameView: View {
                             }) {
                                 Text("Play Math Game")
                                     .padding()
-                                    .background(pet.gameHearts > 0 ? Color.purple : Color.gray)
+                                    .background(pet.gameHearts > 0 && pet.energy > 0 ? Color.purple : Color.gray)
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
                             }
-                            .disabled(pet.gameHearts <= 0)
+                            .disabled(pet.gameHearts <= 0 || pet.energy <= 0)
                             
                             // Button to launch the memory mini-game
                             Button(action: {
@@ -137,11 +139,11 @@ struct MainGameView: View {
                             }) {
                                 Text("Play Memory Game")
                                     .padding()
-                                    .background(pet.gameHearts > 0 ? Color.orange : Color.gray)
+                                    .background(pet.gameHearts > 0 && pet.energy > 0 ? Color.orange : Color.gray)
                                     .foregroundColor(.white)
                                     .cornerRadius(10)
                             }
-                            .disabled(pet.gameHearts <= 0)
+                            .disabled(pet.gameHearts <= 0 || pet.energy <= 0)
                         }
                         
                         // Unlocked Locations
