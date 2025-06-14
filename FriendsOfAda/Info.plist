@@ -19,5 +19,7 @@
 	<array>
 		<string>MKDirectionsModePedestrian</string>
 	</array>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>

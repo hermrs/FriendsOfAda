@@ -1,4 +1,4 @@
-@import SwiftUI
+import SwiftUI
 
 struct PetShopView: View {
     @ObservedObject var viewModel: PetViewModel

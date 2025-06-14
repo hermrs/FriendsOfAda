@@ -60,90 +60,127 @@ struct MapView: UIViewRepresentable {
     }
 }
 
-
 struct WalkView: View {
-    @StateObject private var locationManager = LocationManager.shared // Use the shared instance
+    @StateObject private var locationManager = LocationManager.shared
+    @EnvironmentObject var viewModel: PetViewModel // Get viewModel from environment
+    
     @State private var isWalking = false
+    @State private var showSummary = false
     @Environment(\.dismiss) private var dismiss
     
     @State private var region = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.334_900, longitude: -122.009_020),
-        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005) // Zoom in a bit more
+        span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
     )
     
-    // Callback to pass the result to the parent view
-    var onWalkComplete: (Double) -> Void
-    
     var body: some View {
-        VStack(spacing: 0) {
-            Text("Parkta Yürüyüş")
-                .font(.largeTitle)
-                .fontWeight(.bold)
-                .padding()
-            
-            // The new MapView that wraps MKMapView
+        ZStack(alignment: .bottom) {
             MapView(region: $region, route: locationManager.route)
-                .edgesIgnoringSafeArea(.bottom)
+                .edgesIgnoringSafeArea(.all)
 
             VStack {
-                let distanceInKm = locationManager.distance / 1000.0
-                Text(String(format: "Mesafe: %.1f km", distanceInKm))
-                    .font(.title2)
-                    .padding(.top)
+                // Live Stats "Island"
+                VStack(spacing: 10) {
+                    let distanceInKm = locationManager.distance / 1000.0
+                    
+                    HStack(alignment: .center, spacing: 20) {
+                        StatItem(value: String(format: "%.2f", distanceInKm), unit: "km", label: "Mesafe")
+                        Divider().background(Color.white.opacity(0.5)).frame(height: 40)
+                        StatItem(value: String(format: "%.1f", locationManager.speed), unit: "km/s", label: "Hız")
+                        Divider().background(Color.white.opacity(0.5)).frame(height: 40)
+                        StatItem(value: String(format: "%.1f", locationManager.averageSpeed), unit: "km/s", label: "Ort. Hız")
+                    }
+                }
+                .padding()
+                .background(Color.black.opacity(0.6))
+                .cornerRadius(20)
+                .padding(.horizontal)
                 
+                Spacer()
+
+                // Start/Stop Button
                 if !isWalking {
                     Button("Yürüyüşe Başla") {
                         isWalking = true
                         locationManager.startUpdating()
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .buttonStyle(WalkButtonStyle(color: .green))
                 } else {
                     Button("Yürüyüşü Bitir") {
                         isWalking = false
                         locationManager.stopUpdating()
-                        onWalkComplete(locationManager.distance)
-                        dismiss()
+                        viewModel.walkPet(distanceInMeters: locationManager.distance)
+                        showSummary = true
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color.red)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .buttonStyle(WalkButtonStyle(color: .red))
                 }
-                
-                Button("Kapat") {
-                    locationManager.stopUpdating()
-                    dismiss()
-                }
-                .padding(.top, 5)
-                
             }
-            .padding()
-            .background(Color(.systemBackground)) // Add a background to separate from map
+            .padding(.bottom, 40)
         }
         .onAppear {
-            // Center the map on the user's current location when the view appears
             if let userLocation = locationManager.lastLocation?.coordinate {
                 region.center = userLocation
             }
         }
-        .onChange(of: locationManager.lastLocation) { newLocation in
-            // When location updates, center the map on the new location
-            if let coordinate = newLocation?.coordinate {
-                region.center = coordinate
-            }
+        .sheet(isPresented: $showSummary) {
+            let reward = viewModel.calculateWalkReward(distanceInMeters: locationManager.distance)
+            WalkSummaryView(
+                distance: locationManager.distance / 1000.0,
+                averageSpeed: locationManager.averageSpeed,
+                coinsEarned: reward.coins,
+                onClose: {
+                    showSummary = false
+                    dismiss()
+                }
+            )
         }
-        .navigationBarHidden(true)
     }
 }
 
+// MARK: - Helper Views & Styles
+
+struct StatItem: View {
+    let value: String
+    let unit: String
+    let label: String
+    
+    var body: some View {
+        VStack {
+            HStack(alignment: .firstTextBaseline, spacing: 2) {
+                Text(value)
+                    .font(.system(size: 28, weight: .bold))
+                Text(unit)
+                    .font(.system(size: 14, weight: .semibold))
+                    .offset(y: -2)
+            }
+            Text(label)
+                .font(.caption)
+                .textCase(.uppercase)
+        }
+        .foregroundColor(.white)
+    }
+}
+
+struct WalkButtonStyle: ButtonStyle {
+    let color: Color
+    
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.title2)
+            .fontWeight(.bold)
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(color)
+            .foregroundColor(.white)
+            .cornerRadius(15)
+            .padding(.horizontal)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+    }
+}
 
 struct WalkView_Previews: PreviewProvider {
     static var previews: some View {
-        WalkView(onWalkComplete: { _ in })
+        WalkView()
+            .environmentObject(PetViewModel())
     }
 } 

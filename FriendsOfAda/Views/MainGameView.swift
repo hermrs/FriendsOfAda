@@ -231,9 +231,8 @@ struct MainGameView: View {
                 PetShopView(viewModel: viewModel)
             }
             .sheet(isPresented: $showingWalkView) {
-                WalkView { distance in
-                    viewModel.walkPet(distanceInMeters: distance)
-                }
+                WalkView()
+                    .environmentObject(viewModel)
             }
             .sheet(isPresented: $showingVeterinarian) {
                 VeterinarianView(viewModel: viewModel)

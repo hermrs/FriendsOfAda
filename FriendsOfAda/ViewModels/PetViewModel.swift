@@ -150,14 +150,21 @@ class PetViewModel: ObservableObject {
         addHappinessPoints(5)
     }
     
+    func calculateWalkReward(distanceInMeters: Double) -> (coins: Int, happiness: Int) {
+        let happiness = Int(distanceInMeters / 100.0) * 5
+        let coins = Int(distanceInMeters / 100.0) * 10 // Give more coins
+        return (coins, happiness)
+    }
+    
     func walkPet(distanceInMeters: Double) {
         guard pet != nil else { return }
-        // Give 5 HP and coins for every 100 meters walked
-        let points = Int(distanceInMeters / 100.0) * 5
-        addHappinessPoints(points)
+        let reward = calculateWalkReward(distanceInMeters: distanceInMeters)
+        
+        addHappinessPoints(reward.happiness)
+        addAdaCoins(reward.coins)
         
         // Walking also restores some energy
-        pet!.energy = min(1.0, pet!.energy + 0.1)
+        pet!.energy = min(1.0, pet!.energy + (distanceInMeters / 1000.0) * 0.1) // More distance, more energy
     }
     
     // MARK: - Shop Methods
