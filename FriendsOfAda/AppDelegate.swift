@@ -41,9 +41,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        // Attempt to authenticate the player when the app becomes active.
+        // Use the modern way to get the key window and its root view controller.
+        let keyWindow = application.connectedScenes
+            .filter({$0.activationState == .foregroundActive})
+            .compactMap({$0 as? UIWindowScene})
+            .first?.windows
+            .filter({$0.isKeyWindow}).first
+        
+        if let rootVC = keyWindow?.rootViewController {
+            GameCenterManager.shared.authenticatePlayer(presentingVC: rootVC)
+        }
     }
 
+    // MARK: UISceneSession Lifecycle
 
 }
 

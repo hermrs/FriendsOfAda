@@ -84,11 +84,11 @@ struct WalkView: View {
                     let distanceInKm = locationManager.distance / 1000.0
                     
                     HStack(alignment: .center, spacing: 20) {
-                        StatItem(value: String(format: "%.2f", distanceInKm), unit: "km", label: "Mesafe")
+                        StatItem(value: String(format: "%.2f", distanceInKm), unit: "km", label: "Distance")
                         Divider().background(Color.white.opacity(0.5)).frame(height: 40)
-                        StatItem(value: String(format: "%.1f", locationManager.speed), unit: "km/s", label: "Hız")
+                        StatItem(value: String(format: "%.1f", locationManager.speed), unit: "km/h", label: "Speed")
                         Divider().background(Color.white.opacity(0.5)).frame(height: 40)
-                        StatItem(value: String(format: "%.1f", locationManager.averageSpeed), unit: "km/s", label: "Ort. Hız")
+                        StatItem(value: String(format: "%.1f", locationManager.averageSpeed), unit: "km/h", label: "Avg. Speed")
                     }
                 }
                 .padding()

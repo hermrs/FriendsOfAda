@@ -150,3 +150,48 @@ Proje, şu anda yeni görsel/işitsel varlıkların ve kalan mini oyunların ent
 Ekip olarak bu projenin sadece bir kodlama görevi olmadığını, aynı zamanda çocukların gelişimine olumlu etki edecek bir ürün yarattığımızı unutmamalıyız. Lütfen geliştirme sürecinde GDD'deki (Oyun Tasarım Dokümanı) görsel ve işitsel tarza sadık kalmaya özen gösterin. Tüm sanat ve ses varlıkları ilgili birimler tarafından size sağlanacaktır.
 
 Herhangi bir belirsizlik veya teknik zorluk durumunda hemen iletişime geçelim. Başarılı ve eğlenceli bir geliştirme süreci diliyorum!
+
+6. Gelecek Geliştirmeler İçin Apple Framework Raporu (14.06.2025)
+
+Aşağıda, "Ada's Friends" oyununu daha zengin ve etkileşimli hale getirmek için kullanılabilecek bazı Apple teknolojileri ve projemize potansiyel entegrasyonları hakkında kısa bir analiz bulunmaktadır.
+
+a. GameKit (Game Center)
+-   **Tanım:** Oyunculara sosyal bir oyun ağı sunan, liderlik tabloları, başarılar ve çok oyunculu modlar eklemeyi sağlayan bir framework'tür.
+-   **Projemize Uygulanması:**
+    1.  **Liderlik Tabloları:** "Matematik Konservesi" ve diğer mini oyunlar için en yüksek skorları veya en hızlı bitirme sürelerini listeleyebiliriz. Bu, çocuklar arasında tatlı bir rekabet yaratır.
+    2.  **Başarılar (Achievements):** "İlk Mamanı Ver", "Parkta 1km Yürü", "Matematik Dehası" gibi hedefler belirleyerek oyuncuları farklı görevleri tamamlamaya teşvik edebilir ve onlara rozetler kazandırabiliriz.
+
+b. Core Haptics
+-   **Tanım:** Dokunsal geri bildirim (titreşim) motoru üzerinde hassas kontrol sağlayarak zengin ve detaylı haptik deneyimler oluşturmaya olanak tanır.
+-   **Projemize Uygulanması:**
+    1.  **Duygusal Etkileşim:** Evcil hayvanı severken (okşama) yumuşak, mırlamayı andıran bir titreşim verilebilir. Hayvan mutlu olduğunda farklı, ihtiyaçları karşılanmadığında farklı haptik desenler kullanılabilir.
+    2.  **Geri Bildirim:** Mini oyunlarda doğru cevap verildiğinde veya bir görev başarıyla tamamlandığında tatmin edici, kısa bir titreşimle pozitif pekiştirme sağlanabilir.
+
+c. PHASE (Physical Audio Spatialization Engine)
+-   **Tanım:** Seslerin oyun dünyasındaki objelerin geometrisine ve konumuna göre şekillendiği, gelişmiş ve gerçekçi 3D uzamsal ses deneyimleri sunan bir ses motorudur.
+-   **Projemize Uygulanması:**
+    1.  **Gerçekçi Sesler:** Evcil hayvan ekranın farklı bir noktasına yürüdüğünde, mırlama veya pati seslerinin o yönden gelmesi sağlanabilir.
+    2.  **Ortam Sesleri:** "Park" gibi mekanlarda, ortam sesleri (kuş cıvıltıları, rüzgar) 3D olarak konumlandırılarak daha sürükleyici bir atmosfer yaratılabilir.
+
+d. Game Controller
+-   **Tanım:** MFi (Made for iPhone/iPad) veya üçüncü parti (PlayStation, Xbox) oyun kontrolcülerinin oyuna entegre edilmesini sağlar.
+-   **Projemize Uygulanması:**
+    1.  **Mini Oyun Kontrolü:** Özellikle "Labirent" veya gelecek "Parkur" gibi mini oyunlarda, oyuncuların karakteri fiziksel bir kontrolcü ile yönlendirmesi, dokunmatik kontrollere harika bir alternatif olabilir.
+    2.  **Erişilebilirlik:** Fiziksel kontrolcü desteği, oyunu daha geniş bir kitle için daha erişilebilir hale getirebilir.
+
+e. Entegrasyon Notları (14.06.2025)
+
+Yukarıdaki rapor doğrultusunda, **GameKit (Başarımlar)** ve **Core Haptics** özellikleri projeye başarıyla entegre edilmiştir.
+
+*   **Başarım (Rozet) Sistemi Uygulaması:**
+    *   `Achievement.swift` adında yeni bir model dosyası oluşturularak "İlk Mama", "Usta Gezgin", "Matematik Dehası" gibi tüm başarımlar ve bu başarımlara ait başlık, açıklama ve ikon bilgileri tanımlanmıştır.
+    *   `Pet.swift` modeli, oyuncunun kazandığı başarımları (`earnedAchievements: Set<Achievement>`) saklayacak şekilde güncellenmiştir.
+    *   `PetViewModel` içerisine, belirli oyun içi koşullar sağlandığında (örneğin, ilk kez yemek yediğinde, matematik oyununda yüksek skor yaptığında) ilgili başarımı oyuncuya veren `awardAchievement` fonksiyonu eklenmiştir.
+    *   Oyuncuların kazandıkları ve kazanabilecekleri tüm rozetleri görebilecekleri, şık ve anlaşılır bir `AchievementsView` oluşturulmuş ve ana oyun ekranından erişilebilir hale getirilmiştir.
+
+*   **Core Haptics (Dokunsal Geri Bildirim) Uygulaması:**
+    *   `HapticManager.swift` adında, haptik motorunu yöneten merkezi bir sınıf oluşturulmuştur. Bu sınıf, uygulamanın farklı yerlerinden kolayca çağrılabilen `playSuccess()` ve `playPetting()` gibi metodlar sunar.
+    *   Oyuncu, evcil hayvanını sevdiğinde (`lovePet` metodu), `playPetting` fonksiyonu tetiklenerek yumuşak ve tatmin edici bir dokunsal geri bildirim alır.
+    *   Bir mini oyunu başarıyla tamamlamak veya bir başarım kazanmak gibi olumlu eylemler sonucunda, `playSuccess` fonksiyonu çağrılarak anlık ve net bir başarı hissi pekiştirilir.
+
+Bu iki entegrasyon, oyunun etkileşim derinliğini ve oyuncu motivasyonunu belirgin ölçüde artırmıştır.

@@ -1,8 +1,10 @@
 import SwiftUI
+import RealityKit
 
 struct CharacterCreationView: View {
+    @Environment(\.presentationMode) var presentationMode
     @State private var name: String = ""
-    @State private var petType: PetType = .dog
+    @State private var petType: PetType = .cat
     @State private var color: Color = .brown
     
     // This closure will be called when the user finishes creation
@@ -10,21 +12,21 @@ struct CharacterCreationView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Evcil Hayvanını Yarat!")
+            Text("Choose Your Pet!")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            Image(systemName: petType.iconName)
-                .font(.system(size: 100))
-                .foregroundColor(color)
+            ModelView(petType: petType)
+                .frame(height: 300)
+                .padding()
             
             Form {
-                Section(header: Text("İsim")) {
-                    TextField("Evcil hayvanının adı ne olsun?", text: $name)
+                Section(header: Text("Name")) {
+                    TextField("What should be your pet's name?", text: $name)
                 }
                 
-                Section(header: Text("Tür")) {
-                    Picker("Tür Seç", selection: $petType) {
+                Section(header: Text("Type")) {
+                    Picker("Choose a pet", selection: $petType) {
                         ForEach(PetType.allCases, id: \.self) { type in
                             Text(type.rawValue.capitalized).tag(type)
                         }
@@ -32,13 +34,13 @@ struct CharacterCreationView: View {
                     .pickerStyle(SegmentedPickerStyle())
                 }
                 
-                Section(header: Text("Renk")) {
-                    ColorPicker("Bir renk seç", selection: $color)
+                Section(header: Text("Color")) {
+                    ColorPicker("Select a color", selection: $color)
                 }
             }
             
             Button(action: createPet) {
-                Text("Maceraya Başla!")
+                Text("Start Adventure!")
                     .font(.title2)
                     .padding()
                     .frame(maxWidth: .infinity)

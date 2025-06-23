@@ -1,4 +1,5 @@
 import SwiftUI
+import RealityKit
 
 struct MainGameView: View {
     @EnvironmentObject var viewModel: PetViewModel
@@ -7,6 +8,11 @@ struct MainGameView: View {
     @State private var showingPetShop = false // State for Pet Shop
     @State private var showingWalkView = false // State for Walk View
     @State private var showingVeterinarian = false
+    @State private var showingAchievements = false
+    @State private var showingMazeGame = false
+    @State private var showingWashingGame = false
+    @State private var showingLovingGame = false
+    @State private var showLoveEffect = false
     
     var body: some View {
         // Only show the main content if a pet exists.
@@ -41,9 +47,9 @@ struct MainGameView: View {
                             .foregroundColor(.blue)
                         
                         // Placeholder for pet animation/image
-                        Image(systemName: pet.petType.iconName)
-                            .font(.system(size: 100))
-                            .foregroundColor(pet.color.swiftUIColor)
+                        ModelView(petType: pet.petType)
+                            .frame(height: 250)
+                            .padding(.vertical, 20)
                         
                         // Needs Indicators
                         VStack(alignment: .leading, spacing: 10) {
@@ -97,22 +103,24 @@ struct MainGameView: View {
                             
                             HStack(spacing: 20) {
                                 Button(action: {
-                                    viewModel.lovePet()
+                                    showingWashingGame = true
                                 }) {
-                                    Text("Love")
+                                    Text("Wash")
                                         .padding()
-                                        .background(Color.pink)
+                                        .frame(minWidth: 120)
+                                        .background(Color.teal)
                                         .foregroundColor(.white)
                                         .cornerRadius(10)
                                 }
                                 .disabled(pet.energy <= 0)
                                 
                                 Button(action: {
-                                    viewModel.takeShower()
+                                    showingLovingGame = true
                                 }) {
-                                    Text("Yıka")
+                                    Text("Love")
                                         .padding()
-                                        .background(Color.teal)
+                                        .frame(minWidth: 120)
+                                        .background(Color.pink)
                                         .foregroundColor(.white)
                                         .cornerRadius(10)
                                 }
@@ -144,6 +152,19 @@ struct MainGameView: View {
                                     .cornerRadius(10)
                             }
                             .disabled(pet.gameHearts <= 0 || pet.energy <= 0)
+
+                            // Button to launch the maze mini-game
+                            Button(action: {
+                                viewModel.useGameHeart()
+                                showingMazeGame = true
+                            }) {
+                                Text("Play Maze Game")
+                                    .padding()
+                                    .background(pet.gameHearts > 0 && pet.energy > 0 ? Color.brown : Color.gray)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(10)
+                            }
+                            .disabled(pet.gameHearts <= 0 || pet.energy <= 0)
                         }
                         
                         // Unlocked Locations
@@ -164,16 +185,49 @@ struct MainGameView: View {
                         }
                         .padding(.top)
 
+                        // Achievements Button
+                        Button(action: {
+                            showingAchievements = true
+                        }) {
+                            HStack {
+                                Image(systemName: "star.circle.fill")
+                                Text("Achievements")
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.yellow)
+                            .foregroundColor(.black)
+                            .cornerRadius(10)
+                        }
+                        .padding(.top, 5)
+
                         // MARK: - Test Buttons
                         VStack {
-                            Text("Test Kontrolleri")
+                            Text("Test Controls")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             HStack {
                                 Button("+50 HP") { viewModel.addHappinessPoints(50) }
-                                Button("Seviye Atla") { viewModel.forceLevelUp() }
+                                Button("Level Up") { viewModel.forceLevelUp() }
                                 Button("+1000 Coin") { viewModel.addDebugCoins() }
                                 Button("Reset") { viewModel.resetGame() }
+                            }
+                            .buttonStyle(TestButtonStyle())
+
+                            HStack {
+                                ForEach(Achievement.allCases.prefix(3), id: \.self) { achievement in
+                                    Button("Win: \(achievement.title)") {
+                                        viewModel.awardAchievement(achievement)
+                                    }
+                                }
+                            }
+                            .buttonStyle(TestButtonStyle())
+                            HStack {
+                                ForEach(Achievement.allCases.suffix(from: 3), id: \.self) { achievement in
+                                    Button("Win: \(achievement.title)") {
+                                        viewModel.awardAchievement(achievement)
+                                    }
+                                }
                             }
                             .buttonStyle(TestButtonStyle())
                         }
@@ -184,20 +238,37 @@ struct MainGameView: View {
                     .padding()
                 }
                 
+                // Love Effect Overlay
+                if showLoveEffect {
+                    Image(systemName: "heart.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 100, height: 100)
+                        .foregroundColor(.pink.opacity(0.8))
+                        .transition(.scale.animation(.spring()))
+                        .onAppear {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                                withAnimation {
+                                    showLoveEffect = false
+                                }
+                            }
+                        }
+                }
+                
                 // Game Over Overlay
                 if pet.health <= 0 {
                     Color.black.opacity(0.7).ignoresSafeArea()
                     VStack(spacing: 20) {
-                        Text("Oyun Bitti")
+                        Text("Game Over")
                             .font(.largeTitle)
                             .foregroundColor(.white)
-                        Text("Evcil hayvanın sağlığı tükendi!")
+                        Text("Your pet has run out of health!")
                             .foregroundColor(.white)
                         
                         Button(action: {
                             viewModel.revive()
                         }) {
-                            Text("Dirilt (100 AdaCoin)")
+                            Text("Revive (100 AdaCoin)")
                                 .padding()
                                 .background(pet.adaCoins >= 100 ? Color.green : Color.gray)
                                 .foregroundColor(.white)
@@ -208,7 +279,7 @@ struct MainGameView: View {
                         Button(action: {
                             viewModel.resetGame()
                         }) {
-                            Text("Yeniden Başla")
+                            Text("Restart")
                                 .padding()
                                 .background(Color.red)
                                 .foregroundColor(.white)
@@ -219,14 +290,26 @@ struct MainGameView: View {
             }
             .sheet(isPresented: $showingMathGame) {
                 MathMinigameView { score in
-                    viewModel.addHappinessPoints(score) // Keep happiness for playing
-                    viewModel.addAdaCoins(score * 3)   // Add coins based on score
+                    viewModel.addHappinessPoints(score)
+                    viewModel.addAdaCoins(score * 3)
+                    if score >= 50 {
+                        viewModel.awardAchievement(.mathGenius)
+                    }
+                    HapticManager.shared.playSuccess()
                 }
             }
             .sheet(isPresented: $showingMemoryGame) {
                 MemoryGameView {
-                    viewModel.addHappinessPoints(10) // Give a fixed amount of HP
-                    viewModel.addAdaCoins(5)      // And a fixed amount of coins
+                    viewModel.addHappinessPoints(15) // Award points for winning
+                    viewModel.addAdaCoins(10)      // Award coins
+                    HapticManager.shared.playSuccess()
+                }
+            }
+            .sheet(isPresented: $showingMazeGame) {
+                MazeMinigameView(viewModel: viewModel) { coins in
+                    viewModel.addHappinessPoints(20) // Example points
+                    viewModel.addAdaCoins(coins)
+                    showingMazeGame = false
                 }
             }
             .sheet(isPresented: $showingPetShop) {
@@ -239,13 +322,29 @@ struct MainGameView: View {
             .sheet(isPresented: $showingVeterinarian) {
                 VeterinarianView(viewModel: viewModel)
             }
+            .sheet(isPresented: $showingAchievements) {
+                if let pet = viewModel.pet {
+                    AchievementsView(earnedAchievements: pet.earnedAchievements)
+                }
+            }
+            .sheet(isPresented: $showingWashingGame) {
+                WashingMinigameView(viewModel: viewModel) {
+                    viewModel.takeShower()
+                    HapticManager.shared.playSuccess()
+                }
+            }
+            .sheet(isPresented: $showingLovingGame) {
+                LovingMinigameView(viewModel: viewModel) {
+                    viewModel.lovePet()
+                }
+            }
             .onAppear {
                 viewModel.refillHearts()
             }
         } else {
             // Show a loading view if the pet data is not yet available
             VStack {
-                Text("Yükleniyor...")
+                Text("Loading...")
                 ProgressView()
             }
         }

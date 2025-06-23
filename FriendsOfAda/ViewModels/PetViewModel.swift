@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI // For Binding
 
 class PetViewModel: ObservableObject {
     @Published var pet: Pet?
@@ -132,6 +133,31 @@ class PetViewModel: ObservableObject {
         }
     }
     
+    // MARK: - Achievement System
+
+    func awardAchievement(_ achievement: Achievement) {
+        guard pet != nil, !pet!.earnedAchievements.contains(achievement) else { return }
+        pet!.earnedAchievements.insert(achievement)
+        HapticManager.shared.playSuccess()
+        
+        // Report the achievement to Game Center
+        GameCenterManager.shared.reportAchievement(identifier: achievement.rawValue, percentComplete: 100.0)
+    }
+
+    private func checkAchievements() {
+        guard pet != nil else { return }
+
+        // Pet Lover
+        if pet!.loveInteractionCount >= 25 {
+            awardAchievement(.petLover)
+        }
+
+        // Big Spender
+        if pet!.totalCoinsSpent >= 500 {
+            awardAchievement(.shoppingSpree)
+        }
+    }
+    
     // MARK: - Interaction Methods
     
     func feed() {
@@ -139,6 +165,7 @@ class PetViewModel: ObservableObject {
         pet!.foodCount -= 1
         pet!.hunger = min(1.0, pet!.hunger + 0.3)
         addHappinessPoints(10)
+        awardAchievement(.firstFeed)
     }
     
     func giveWater() {
@@ -153,7 +180,14 @@ class PetViewModel: ObservableObject {
         
         self.pet!.love = min(1.0, pet.love + 0.25)
         self.pet!.energy = max(0, pet.energy - 0.05) // Loving interaction consumes a little energy
+        self.pet!.loveInteractionCount += 1
+        
+        HapticManager.shared.playPetting()
         addHappinessPoints(15)
+
+        if self.pet!.loveInteractionCount >= 25 {
+            awardAchievement(.petLover)
+        }
         
         if self.pet!.energy <= 0 {
             startEnergyRegeneration()
@@ -189,6 +223,10 @@ class PetViewModel: ObservableObject {
         addHappinessPoints(reward.happiness)
         addAdaCoins(reward.coins)
         
+        if distanceInMeters >= 1000 {
+            awardAchievement(.longWalk)
+        }
+        
         pet!.energy = min(1.0, pet!.energy + (distanceInMeters / 1000.0) * 0.1) // More distance, more energy
     }
     
@@ -200,6 +238,8 @@ class PetViewModel: ObservableObject {
         if pet!.adaCoins >= foodCost {
             pet!.adaCoins -= foodCost
             pet!.foodCount += 1
+            pet!.totalCoinsSpent += foodCost
+            checkAchievements()
         }
     }
     
@@ -209,6 +249,8 @@ class PetViewModel: ObservableObject {
         if pet!.adaCoins >= waterCost {
             pet!.adaCoins -= waterCost
             pet!.waterCount += 1
+            pet!.totalCoinsSpent += waterCost
+            checkAchievements()
         }
     }
     
@@ -265,10 +307,13 @@ class PetViewModel: ObservableObject {
     // MARK: - Veterinarian
     
     func healPet(percentage: Double, cost: Int) {
-        guard pet != nil, pet!.adaCoins >= cost else { return }
+        guard let pet = pet, pet.adaCoins >= cost else { return }
         
-        pet!.adaCoins -= cost
-        pet!.health = min(1.0, pet!.health + percentage)
+        self.pet!.adaCoins -= cost
+        self.pet!.health = min(1.0, pet.health + percentage)
+        self.pet!.totalCoinsSpent += cost
+        checkAchievements()
+        HapticManager.shared.playSuccess()
     }
     
     func resetGame() {

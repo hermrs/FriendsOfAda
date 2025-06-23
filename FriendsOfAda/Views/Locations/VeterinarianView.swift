@@ -6,12 +6,12 @@ struct VeterinarianView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Text("Veteriner")
+            Text("Veterinarian")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
             if let pet = viewModel.pet {
-                Text("Mevcut Sağlık: \(Int(pet.health * 100))%")
+                Text("Current Health: \(Int(pet.health * 100))%")
                     .font(.title2)
                 
                 Text("AdaCoins: \(pet.adaCoins)")
@@ -22,7 +22,7 @@ struct VeterinarianView: View {
                 
                 VStack(spacing: 15) {
                     HealingButton(
-                        label: "Küçük Tedavi (%10 Can)",
+                        label: "Small Heal (10% HP)",
                         cost: 1000,
                         currentCoins: pet.adaCoins
                     ) {
@@ -30,7 +30,7 @@ struct VeterinarianView: View {
                     }
                     
                     HealingButton(
-                        label: "Orta Tedavi (%50 Can)",
+                        label: "Medium Heal (50% HP)",
                         cost: 5000,
                         currentCoins: pet.adaCoins
                     ) {
@@ -38,7 +38,7 @@ struct VeterinarianView: View {
                     }
                     
                     HealingButton(
-                        label: "Tam Tedavi (%100 Can)",
+                        label: "Full Heal (100% HP)",
                         cost: 10000,
                         currentCoins: pet.adaCoins
                     ) {
@@ -48,11 +48,11 @@ struct VeterinarianView: View {
                 
                 Spacer()
                 
-                Button("Kapat") {
+                Button("Close") {
                     dismiss()
                 }
             } else {
-                Text("Evcil hayvan bilgisi yüklenemedi.")
+                Text("Could not load pet information.")
             }
         }
         .padding()

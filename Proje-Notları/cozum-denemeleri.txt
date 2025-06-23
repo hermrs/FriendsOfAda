@@ -1,0 +1,49 @@
+CoreHaptics Derleme Hatası Çözüm Denemeleri
+============================================
+
+Bu dosya, 'Cannot find type in scope' hatasını çözmek için denenen adımları ve sonuçlarını kaydetmek amacıyla oluşturulmuştur.
+
+### Deneme 1: Koşullu Derleme Bloğu
+- **Yapılan İşlem:** `HapticManager.swift` içindeki `CoreHaptics` ile ilgili tüm kod, `#if canImport(CoreHaptics)` ... `#endif` bloğu içine alındı.
+- **Amaç:** Kodun yalnızca `CoreHaptics`'i destekleyen platformlarda derlenmesini sağlayarak, simülatör gibi ortamlarda oluşabilecek hataları engellemek.
+- **Sonuç:** Hata devam etti. Bu, sorunun `CoreHaptics`'in varlığı değil, derleyici tarafından bulunamaması olduğunu gösterdi.
+
+### Deneme 2: Proje Dosyasını Manuel Düzenleme
+- **Yapılan İşlem:** `FriendsOfAda.xcodeproj/project.pbxproj` dosyası manuel olarak düzenlenerek `CoreHaptics.framework`'ü projeye bağlamak için gerekli referanslar eklendi. `PBXFileReference`, `PBXBuildFile` ve `PBXFrameworksBuildPhase` bölümlerine yeni girdiler yapıldı.
+- **Amaç:** Projenin "Link Binary With Libraries" aşamasına `CoreHaptics` framework'ünü ekleyerek derleyicinin gerekli sembolleri bulmasını sağlamak.
+- **Sonuç:** Hata devam etti. Bu, manuel düzenlemenin eksik veya hatalı olabileceğini düşündürdü. Özellikle `FRAMEWORK_SEARCH_PATHS` gibi ek bir ayarın gerekebileceği anlaşıldı.
+
+### Deneme 3: Türetilmiş Verileri Temizleme ve Arama Yolu Ekleme
+- **Yapılan İşlem:** 
+  1. `rm -rf ~/Library/Developer/Xcode/DerivedData/*` komutuyla Xcode'un önbelleğe alınmış derleme verileri temizlendi.
+  2. `project.pbxproj` dosyasına, `Debug` ve `Release` yapılandırmaları için `FRAMEWORK_SEARCH_PATHS` ayarı eklenecek.
+- **Amaç:** Önbellek sorunlarını ortadan kaldırmak ve derleyiciye framework'leri araması için doğru sistem yolunu göstermek.
+- **Sonuç:** Beklemede.
+
+### Deneme 4: Sorunu Yalıtmak İçin CoreHaptics Bağımlılığını Geçici Olarak Kaldırma
+- **Yapılan İşlem:** 
+  1. Apple dokümanları incelendi (`UIFeedbackGenerator` ve Apple Pencil haptics).
+  2. Sorunun `CoreHaptics` kütüphanesinin projeye bağlanmasından kaynaklandığı kesinleşti.
+  3. Teşhis amaçlı olarak, `HapticManager.swift` dosyasındaki `CoreHaptics`'e özgü kod geçici olarak devre dışı bırakılacak ve tüm dokunsal geri bildirimler için daha basit olan `UIFeedbackGenerator` kullanılacak.
+- **Amaç:** Projenin geri kalanının sorunsuz derlendiğini doğrulamak ve hatanın tamamen `CoreHaptics` entegrasyonuyla sınırlı olduğunu teyit etmek.
+- **Sonuç:** "Invalid redeclaration of 'HapticManager'" hatası alındı. Önceki düzenleme, kodu temizlemek yerine çoğalttı.
+
+### Deneme 5: Kod Temizliği ve Tekrar Yalıtma
+- **Yapılan İşlem:** `HapticManager.swift` dosyası tamamen temizlenecek. İçinde yalnızca `UIFeedbackGenerator` kullanan tek ve basit bir `HapticManager` sınıfı bırakılacak.
+- **Amaç:** Tüm derleme hatalarını ortadan kaldırarak temiz bir başlangıç noktası elde etmek.
+- **Sonuç:** Başarılı. Proje derlendi. Sorunun tamamen `CoreHaptics` entegrasyonuyla ilgili olduğu kesinleşti.
+
+### Deneme 6: CoreHaptics'i Güvenli Bir Şekilde Yeniden Entegre Etme
+- **Yapılan İşlem:** `HapticManager.swift` dosyası, `CoreHaptics`'i yeniden kullanacak şekilde güncellenecek. Kod, `#if canImport(CoreHaptics)` makrosu kullanılarak dikkatlice sarmalanacak ve desteklemeyen platformlar için bir yedek (fallback) sınıf sağlanacak.
+- **Amaç:** Gelişmiş dokunsal geri bildirimleri, projenin kararlılığını bozmadan ve farklı platformlarla uyumluluğu koruyarak yeniden etkinleştirmek.
+- **Sonuç:** Hata devam etti. Proje yapılandırması, `#if canImport` bloğu doğru çalışsa bile `CoreHaptics` sembollerini bulamıyor.
+
+### Deneme 7: Proje Dosyasını Temiz Bir Duruma Geri Döndürme
+- **Yapılan İşlem:** `project.pbxproj` dosyasında `CoreHaptics.framework`'ü eklemek için manuel olarak yapılmış tüm değişiklikler geri alınacak. Bu, `PBXBuildFile`, `PBXFileReference`, `PBXGroup` ve `PBXFrameworksBuildPhase` bölümlerindeki ilgili satırların silinmesini içerir.
+- **Amaç:** Proje dosyasını bilinen, temiz bir duruma getirerek sorunun kaynağını yeniden değerlendirmek. Programatik düzenlemelerin başarısız olduğu anlaşıldığından, kullanıcıya Xcode arayüzü üzerinden manuel ekleme adımları sunulacak.
+- **Sonuç:** Başarılı. Proje dosyası temizlendi. Kullanıcı, Xcode arayüzünden `CoreHaptics.framework`'ü projeye manuel olarak ekledi.
+
+### Final Çözüm:
+- **Yapılan İşlem:** `HapticManager.swift` dosyası, `CoreHaptics`'i güvenli bir şekilde kullanan ve desteklenmeyen platformlar için `UIFeedbackGenerator`'a düşen son haliyle güncellendi.
+- **Amaç:** Sorunu kesin olarak çözmek.
+- **Sonuç:** Beklemede. 

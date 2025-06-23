@@ -17,7 +17,7 @@ struct MemoryGameView: View {
     var body: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Hafıza Kartları")
+                Text("Memory Cards")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 Spacer()

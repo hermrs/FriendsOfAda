@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import RealityKit // For SIMD3<Float>
 
 // A simple Codable wrapper for Color
 struct CodableColor: Codable, Hashable {
@@ -12,18 +13,52 @@ struct CodableColor: Codable, Hashable {
     }
 }
 
-enum PetType: String, Codable, CaseIterable {
-    case dog = "dog"
-    case cat = "cat"
-    case bird = "bird"
-    case rabbit = "rabbit"
+// Defines the type of pet the user can have
+enum PetType: String, CaseIterable, Codable {
+    case cat = "Cat"
+    case dog = "Dog"
+    case hamster = "Hamster"
     
     var iconName: String {
         switch self {
-        case .dog: return "dog.fill"
         case .cat: return "cat.fill"
-        case .bird: return "bird.fill"
-        case .rabbit: return "hare.fill" // SF Symbols has a hare for rabbit
+        case .dog: return "dog.fill"
+        case .hamster: return "hamster.fill"
+        }
+    }
+    
+    var modelName: String {
+        switch self {
+        case .cat:
+            return "Cartoon_cat_pet_Free.usdz"
+        case .dog:
+            return "Free_Shar_Pei_Animated_Dog.usdz"
+        case .hamster:
+            return "HAMster.usdz"
+        }
+    }
+    
+    /// Provides model-specific adjustments for scale, position, and rotation.
+    var configuration: (scale: SIMD3<Float>, position: SIMD3<Float>, rotation: simd_quatf) {
+        switch self {
+        case .cat:
+            return (
+                scale: [0.00005, 0.00005, 0.00005],
+                position: [0.5, 0.2, 100],
+                rotation: simd_quatf(angle: 0, axis: [0, 1, 0])
+            )
+        case .dog:
+            return (
+                scale: [0.0005, 0.0005, 0.0005],
+                position: [0, -10, 100],
+                rotation: simd_quatf(angle: 0, axis: [0, 1, 0])
+            )
+        case .hamster:
+            return (
+                scale: [0.0008, 0.0008, 0.0008],
+                position: [0, 30, 500],
+                rotation: simd_quatf(angle: .pi / 2, axis: [0, 1, 0])
+            )
         }
     }
 }
@@ -51,6 +86,11 @@ struct Pet: Codable, Identifiable {
     var gameHearts: Int = 3
     var lastHeartRefillTimestamp: Date = Date()
     
+    // Achievement Tracking
+    var earnedAchievements: Set<Achievement> = []
+    var loveInteractionCount: Int = 0
+    var totalCoinsSpent: Int = 0
+    
     // Needs are represented as values between 0.0 (empty) and 1.0 (full)
     var hunger: Double = 1.0
     var thirst: Double = 1.0
@@ -60,11 +100,12 @@ struct Pet: Codable, Identifiable {
     
     // CodingKeys, init, etc.
     enum CodingKeys: String, CodingKey {
-        case id, name, petType, color, level, happinessPoints
+        case id, name, petType, color, level, happinessPoints, adaCoins
         case health, hunger, thirst, hygiene, love, energy
         case lastUpdateTimestamp
-        case foodCount, waterCount, adaCoins
+        case foodCount, waterCount
         case gameHearts, lastHeartRefillTimestamp
+        case earnedAchievements, loveInteractionCount, totalCoinsSpent
     }
     
     // Custom init for creating a new pet
@@ -101,6 +142,9 @@ struct Pet: Codable, Identifiable {
         self.adaCoins = try container.decode(Int.self, forKey: .adaCoins)
         self.gameHearts = try container.decode(Int.self, forKey: .gameHearts)
         self.lastHeartRefillTimestamp = try container.decode(Date.self, forKey: .lastHeartRefillTimestamp)
+        self.earnedAchievements = try container.decode(Set<Achievement>.self, forKey: .earnedAchievements)
+        self.loveInteractionCount = try container.decode(Int.self, forKey: .loveInteractionCount)
+        self.totalCoinsSpent = try container.decode(Int.self, forKey: .totalCoinsSpent)
     }
     
     // Manual implementation of Encodable
@@ -124,5 +168,8 @@ struct Pet: Codable, Identifiable {
         try container.encode(adaCoins, forKey: .adaCoins)
         try container.encode(gameHearts, forKey: .gameHearts)
         try container.encode(lastHeartRefillTimestamp, forKey: .lastHeartRefillTimestamp)
+        try container.encode(earnedAchievements, forKey: .earnedAchievements)
+        try container.encode(loveInteractionCount, forKey: .loveInteractionCount)
+        try container.encode(totalCoinsSpent, forKey: .totalCoinsSpent)
     }
 } 

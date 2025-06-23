@@ -12,7 +12,7 @@ struct PetShopView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 Spacer()
-                Button("Kapat") {
+                Button("Close") {
                     dismiss()
                 }
             }
@@ -29,7 +29,7 @@ struct PetShopView: View {
                 Spacer()
                 
                 VStack(spacing: 20) {
-                    Text("Ürünler")
+                    Text("Products")
                         .font(.title)
                     
                     Button(action: {
@@ -37,7 +37,7 @@ struct PetShopView: View {
                     }) {
                         HStack {
                             Image(systemName: "fork.knife")
-                            Text("Mama Satın Al (15 Coin)")
+                            Text("Buy Food (15 Coins)")
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -52,7 +52,7 @@ struct PetShopView: View {
                     }) {
                         HStack {
                             Image(systemName: "drop.fill")
-                            Text("Su Satın Al (10 Coin)")
+                            Text("Buy Water (10 Coins)")
                         }
                         .padding()
                         .frame(maxWidth: .infinity)
@@ -66,7 +66,7 @@ struct PetShopView: View {
                 Spacer()
             } else {
                 Spacer()
-                Text("Evcil hayvan bilgileri yükleniyor...")
+                Text("Loading pet information...")
                 Spacer()
             }
         }

@@ -19,9 +19,13 @@ struct WalkSummaryView: View {
                 .fontWeight(.bold)
             
             VStack(spacing: 20) {
-                InfoRow(icon: "ruler", label: "Mesafe", value: String(format: "%.2f km", distance))
-                InfoRow(icon: "speedometer", label: "Ortalama Hız", value: String(format: "%.1f km/s", averageSpeed))
-                InfoRow(icon: "bitcoinsign.circle.fill", label: "Kazanılan", value: "\(coinsEarned) AdaCoin")
+                Text("Walk Summary")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                InfoRow(icon: "ruler", label: "Distance", value: String(format: "%.2f km", distance))
+                InfoRow(icon: "speedometer", label: "Average Speed", value: String(format: "%.1f km/h", averageSpeed))
+                InfoRow(icon: "bitcoinsign.circle", label: "AdaCoins Earned", value: "\(coinsEarned)")
             }
             .padding()
             .background(Color(.systemGray6))

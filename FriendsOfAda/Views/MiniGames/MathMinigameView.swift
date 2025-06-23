@@ -12,10 +12,10 @@ struct MathMinigameView: View {
             
             // Header with Score and Close button
             HStack {
-                Text("Skor: \(viewModel.score)")
+                Text("Score: \(viewModel.score)")
                     .font(.title2)
                 Spacer()
-                Button("Kapat") {
+                Button("Close") {
                     viewModel.finishGame()
                 }
             }
@@ -24,7 +24,7 @@ struct MathMinigameView: View {
                 .font(.system(size: 80))
                 .foregroundColor(.gray)
             
-            Text("Matematik Konservesi")
+            Text("Math Game")
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
