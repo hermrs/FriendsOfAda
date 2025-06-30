@@ -21,7 +21,7 @@ struct MemoryGameView: View {
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 Spacer()
-                Button("Kapat") {
+                Button("Close") {
                     dismiss()
                 }
                 .padding(.horizontal)
@@ -31,9 +31,9 @@ struct MemoryGameView: View {
             }
             
             HStack {
-                Text("Hamle: \(viewModel.moves)")
+                Text("Moves: \(viewModel.moves)")
                 Spacer()
-                Text("Seri: \(viewModel.consecutiveWins)")
+                Text("Streak: \(viewModel.consecutiveWins)")
             }
             .font(.title2)
             
@@ -48,7 +48,7 @@ struct MemoryGameView: View {
             }
             
             if viewModel.cards.allSatisfy({ $0.isMatched }) && !viewModel.cards.isEmpty {
-                Text("Tebrikler, kazandınız!")
+                Text("Congratulations, you won!")
                     .font(.title)
                     .foregroundColor(.green)
                     .transition(.scale)

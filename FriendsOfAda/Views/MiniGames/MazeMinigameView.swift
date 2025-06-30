@@ -24,11 +24,11 @@ struct MazeMinigameView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 20) {
-                Text("Labirent Oyunu")
+                Text("Maze Game")
                     .font(.largeTitle)
                     .padding(.top)
                 
-                Text("Çıkışı bul!")
+                Text("Find the exit!")
                     .font(.headline)
                     .foregroundColor(.secondary)
                 
@@ -75,9 +75,9 @@ struct MazeMinigameView: View {
         }
         .alert(isPresented: $gameWon) {
             Alert(
-                title: Text("Tebrikler!"),
-                message: Text("Labirenti başarıyla tamamladın ve 25 AdaCoin kazandın!"),
-                dismissButton: .default(Text("Harika!")) {
+                title: Text("Congratulations!"),
+                message: Text("You have successfully completed the maze and earned 25 AdaCoins!"),
+                dismissButton: .default(Text("OK")) {
                     onGameEnd(25) // Pass the coin reward back
                     presentationMode.wrappedValue.dismiss()
                 }

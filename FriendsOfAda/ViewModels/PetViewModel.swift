@@ -365,5 +365,13 @@ class PetViewModel: ObservableObject {
         energyRegenerationTimer = nil
     }
     
+    // MARK: - Test Methods
+    
+    func fillEnergy() {
+        guard pet != nil else { return }
+        stopEnergyRegeneration() // Stop the timer if it's running
+        pet?.energy = 1.0
+    }
+    
     // Other interaction methods will be added here
 } 

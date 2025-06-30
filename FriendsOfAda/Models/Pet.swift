@@ -43,20 +43,20 @@ enum PetType: String, CaseIterable, Codable {
         switch self {
         case .cat:
             return (
-                scale: [0.00005, 0.00005, 0.00005],
-                position: [0.5, 0.2, 100],
-                rotation: simd_quatf(angle: 0, axis: [0, 1, 0])
+                scale: [0.001, 0.001, 0.001],
+                position: [0.5, 8, 500],
+                rotation: simd_quatf(angle: 0, axis: [1, 0, 0])
             )
         case .dog:
             return (
-                scale: [0.0005, 0.0005, 0.0005],
-                position: [0, -10, 100],
+                scale: [0.0008, 0.0008, 0.0008],
+                position: [0, 30, 100],
                 rotation: simd_quatf(angle: 0, axis: [0, 1, 0])
             )
         case .hamster:
             return (
-                scale: [0.0008, 0.0008, 0.0008],
-                position: [0, 30, 500],
+                scale: [0.005, 0.005, 0.005],
+                position: [0, 100, 500],
                 rotation: simd_quatf(angle: .pi / 2, axis: [0, 1, 0])
             )
         }

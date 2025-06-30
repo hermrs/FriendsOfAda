@@ -34,13 +34,14 @@ struct WashingMinigameView: View {
                 Color.blue.opacity(0.3).ignoresSafeArea()
                 
                 VStack {
-                    Text("Evcil Hayvanını Yıka!")
+                    Text("Wash Your Pet!")
                         .font(.largeTitle)
-                        .padding()
+                        .padding(.top, 50)
                     
-                    Text("Köpük yapmak için üzerinde parmağını gezdir!")
+                    Text("Move your finger over it to create foam!")
                         .font(.headline)
                         .foregroundColor(.secondary)
+                        .padding(.bottom, 20)
                     
                     ZStack {
                         // Pet Model in the center
@@ -73,7 +74,7 @@ struct WashingMinigameView: View {
                     }
                     
                     // Progress Bar
-                    ProgressView("Temizlik", value: progress, total: 1.0)
+                    ProgressView("Hygiene", value: progress, total: 1.0)
                         .padding()
                         .accentColor(.green)
 
@@ -82,7 +83,7 @@ struct WashingMinigameView: View {
                         onEnd() // Call the completion handler
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("Bitti")
+                        Text("Done")
                             .font(.title2)
                             .padding()
                             .frame(maxWidth: .infinity)

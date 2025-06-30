@@ -1,0 +1,113 @@
+Ada's Friends - Kapsamlı Mimari ve Dosya Analizi
+======================================================
+
+Bu doküman, "Ada's Friends" iOS oyununun kod mimarisini, kullanılan tasarım desenlerini ve proje içindeki her bir Swift dosyasının sorumluluklarını, iç işleyişini ve diğer bileşenlerle olan ilişkilerini derinlemesine açıklar.
+
+---
+
+### BÖLÜM 1: MİMARİ YAKLAŞIM - MVVM (MODEL-VIEW-VIEWMODEL)
+
+Proje, Apple'ın modern uygulama geliştirme için önerdiği **MVVM (Model-View-ViewModel)** tasarım desenini temel alır. Bu desen, sorumlulukların net bir şekilde ayrılmasını sağlar:
+
+- **Model:** Uygulamanın veri çekirdeği. Sadece veri yapılarını (`struct`, `enum`) ve bu verilerle ilgili temel, UI'dan bağımsız mantığı içerir. Örnek: `Pet`, `Achievement`.
+- **View:** Kullanıcının gördüğü ve etkileşimde bulunduğu arayüz katmanı. Tamamen **SwiftUI** ile oluşturulmuştur. Kendi içinde durum (`@State`) yönetir ama iş mantığı içermez. Örnek: `MainGameView`, `LovingMinigameView`.
+- **ViewModel:** Model ve View arasında bir aracı ve mantık katmanıdır. View'den gelen olayları (`Button` tıklaması gibi) alır, bu olaylara göre iş mantığını çalıştırır, Model'i günceller ve Model'deki değişiklikleri View'in anlayacağı şekilde yayınlar (`@Published`). Örnek: `PetViewModel`.
+
+Bu yapı, kodu modüler, test edilebilir ve yönetimi kolay hale getirir.
+
+---
+
+### BÖLÜM 2: DOSYA BAZINDA DETAYLI ANALİZ
+
+Bu bölümde, projedeki her bir `.swift` dosyası, bulunduğu klasöre göre gruplandırılarak analiz edilecektir.
+
+#### 2.1 /Models Klasörü - Veri Çekirdeği
+
+Bu klasör, uygulamanın temel, ham veri yapılarının şemalarını içerir. Bu dosyalar, oyunun "ne" olduğunu tanımlar.
+
+**`Pet.swift`**
+- **Genel Sorumluluk:** Oyundaki evcil hayvanın tüm özelliklerini, türünü ve durumunu tanımlayan merkezi veri yapısıdır. `Codable` protokolüne uygun olması, bu yapının kolayca JSON formatına dönüştürülüp `UserDefaults`'e kaydedilmesini ve oradan okunmasını sağlar.
+- **Detaylı Analiz:**
+    - **`PetType` (Enum):** Hayvanın türünü (`Cat`, `Dog`, `Hamster`) temsil eden bir numaralandırmadır. `CaseIterable` olması, karakter yaratma ekranında tüm seçeneklerin kolayca listelenmesini sağlar.
+        - `modelName` (Hesaplanmış Özellik): Seçilen türe göre hangi `.usdz` 3D model dosyasının yükleneceğini belirler.
+        - `configuration` (Hesaplanmış Özellik): **Projenin en kritik mantıklarından biridir.** Her bir 3D modelin kendine has boyut ve merkez noktası farklılıkları olduğu için, bu özellik her türe özel `scale` (ölçek), `position` (pozisyon) ve `rotation` (dönüş) ayarlarını bir demet (`tuple`) olarak döndürür. Bu sayede her model, `ModelView` tarafından ekranda doğru şekilde konumlandırılır.
+    - **`Pet` (Struct):** Hayvanın bir örneğini (instance) temsil eden ana yapıdır. Hayvanın adı, `PetType` türü, sağlık/açlık gibi ihtiyaçları (`Double` olarak 0.0-1.0 arasında), parası (`adaCoins`), seviyesi ve `Set<Achievement>` olarak tutulan kazanılmış başarım koleksiyonu gibi tüm dinamik verileri barındırır.
+- **Diğer Dosyalarla Etkileşimi:** `PetViewModel` tarafından yönetilir ve güncellenir. `ModelView` ve diğer tüm `View`'ler, bu yapıdaki verileri görüntülemek için `PetViewModel` üzerinden dolaylı olarak erişir.
+
+**`Achievement.swift`**
+- **Genel Sorumluluk:** Oyundaki tüm başarım (rozet) türlerini ve bunların App Store Connect'teki kimliklerini (ID) tanımlar.
+- **Detaylı Analiz:** `String` türünde `rawValue`'a sahip bir `enum`'dur. Bu `rawValue` değeri ("firstFeed", "mathGenius" gibi), bir başarım kazanıldığında `GameCenterManager` tarafından doğrudan Apple'ın sunucularına gönderilecek olan "Achievement ID" olarak kullanılır. `CaseIterable` olması, tüm başarımların bir liste halinde, örneğin "Başarımlar" ekranında gösterilmesini kolaylaştırır.
+- **Diğer Dosyalarla Etkileşimi:** `PetViewModel` içindeki `awardAchievement` fonksiyonu tarafından kullanılır ve `Pet` struct'ı içinde bir koleksiyon olarak saklanır. `AchievementsView` tarafından listelenir.
+
+---
+
+#### 2.2 /ViewModels Klasörü - İş Mantığı Katmanı
+
+**`PetViewModel.swift`**
+- **Genel Sorumluluk:** Oyunun "beyni" ve ana mantık merkezidir. `ObservableObject` protokolü sayesinde, içindeki `@Published` olarak işaretlenmiş değişkenler değiştiğinde, bu ViewModel'i dinleyen tüm SwiftUI `View`'lerinin otomatik olarak güncellenmesini sağlar.
+- **Detaylı Analiz:**
+    - `@Published var pet: Pet?`: Ana oyun verisini tutan en önemli özelliktir. `MainGameView` gibi ekranlar, bu `pet` nesnesinin içindeki verilere (adı, seviyesi, ihtiyaçları vb.) göre kendilerini günceller.
+    - `init()`: Sınıf başlatıldığında, `UserDefaults`'ten kayıtlı bir oyun olup olmadığını kontrol eder (`loadPet`). Varsa oyunu yükler, yoksa `pet` `nil` olarak kalır. Ayrıca, hayvanın ihtiyaçlarını periyodik olarak azaltacak olan `startNeedsDecay()` zamanlayıcısını tetikler.
+    - `startNeedsDecay()`: `Timer` kullanarak her birkaç saniyede bir `decayNeeds()` fonksiyonunu çağırır. Bu fonksiyon, geçen süreye bağlı olarak hayvanın açlık, susuzluk gibi ihtiyaçlarını matematiksel olarak azaltır.
+    - **Etkileşim Fonksiyonları** (`feed`, `giveWater`, `lovePet`, `takeShower`): `MainGameView`'deki butonlar tarafından çağrılırlar. Bu fonksiyonlar, `pet` modelinin ilgili ihtiyacını artırır, mutluluk puanı ekler ve `awardAchievement`'ı çağırarak ilgili başarımın kazanılıp kazanılmadığını kontrol eder.
+    - **Veri Kalıcılığı** (`savePet`, `loadPet`): `JSONEncoder` ve `JSONDecoder` kullanarak `Pet` nesnesini veriye dönüştürür ve `UserDefaults` aracılığıyla cihaza kaydeder veya cihazdan okur. Bu, uygulamanın kapatılıp açıldığında oyunun kaldığı yerden devam etmesini sağlar.
+- **Diğer Dosyalarla Etkileşimi:** Neredeyse tüm `View`'ler tarafından bir `@EnvironmentObject` olarak kullanılır. `GameCenterManager`'ı çağırarak başarım raporlar. `HapticManager`'ı çağırarak dokunsal geri bildirimler oluşturur.
+
+---
+
+#### 2.3 /Managers Klasörü - Servis Yöneticileri
+
+**`GameCenterManager.swift`**
+- **Genel Sorumluluk:** Apple Game Center ile olan tüm iletişimi merkezileştirir ve basitleştirir. Singleton tasarım deseni (`static let shared`) kullanılarak, projenin herhangi bir yerinden her zaman aynı örnek üzerinden erişilmesi sağlanır.
+- **Detaylı Analiz:**
+    - `authenticatePlayer(presentingVC:)`: Oyuncunun Game Center hesabını doğrulamak için `GKLocalPlayer.local.authenticateHandler`'ı kullanır. Eğer kullanıcı giriş yapmamışsa, Apple tarafından sağlanan bir `viewController`'ı parametre olarak aldığı `presentingVC` üzerinde sunar.
+    - `reportAchievement(...)`: Parametre olarak aldığı başarım ID'si ve tamamlanma yüzdesi ile bir `GKAchievement` nesnesi oluşturur ve bunu `GKAchievement.report()` metoduyla Apple sunucularına gönderir. `showsCompletionBanner = true` ayarı, başarım kazanıldığında ekranın üstünde standart "Achievement Unlocked" bildiriminin çıkmasını sağlar.
+- **Diğer Dosyalarla Etkileşimi:** `AppDelegate` tarafından `authenticatePlayer` fonksiyonu çağrılır. `PetViewModel` tarafından `reportAchievement` fonksiyonu çağrılır.
+
+**`HapticManager.swift`**
+- **Genel Sorumluluk:** Cihazın dokunsal geri bildirim (titreşim) özelliklerini yönetir.
+- **Detaylı Analiz:** Şu anki basit halinde, `UIFeedbackGenerator` kullanarak temel bildirim (`.success`) ve etki (`.soft`) titreşimleri oluşturur. Bu, kodun karmaşıklığını azaltırken, kullanıcıya eylemleri için fiziksel bir geri bildirim sunar. `playSuccess` ve `playPetting` gibi metodlar, bu işlemleri soyutlayarak ViewModel'in "nasıl" titreşim oluşturulacağını bilmesine gerek kalmadan sadece "ne zaman" oluşturulacağını söylemesini sağlar.
+- **Diğer Dosyalarla Etkileşimi:** `PetViewModel` ve mini oyun `View`'leri tarafından, başarılı bir eylem veya sürekli bir etkileşim sırasında çağrılır.
+
+---
+
+#### 2.4 /Views Klasörü - Arayüz Katmanı
+
+Bu klasör, kullanıcının doğrudan gördüğü ve etkileşimde bulunduğu tüm ekranları içerir.
+
+**`ModelView.swift`**
+- **Genel Sorumluluk:** `RealityKit` dünyasını bir SwiftUI `View`'i haline getiren, `UIViewRepresentable` protokolünü kullanan kritik bir köprüdür. Bu, 3D içeriği modern SwiftUI arayüzleriyle sorunsuz bir şekilde entegre etmemizi sağlar.
+- **Detaylı Analiz:**
+    - `petType` (Parametre): Hangi hayvanın gösterileceğini ve hangi konfigürasyonun kullanılacağını belirler.
+    - `updateUIView(_:context:)`: SwiftUI bu görünümü güncellediğinde çalışır. `Task` ve `async/await` kullanarak `ModelEntity(named:)` ile asenkron olarak 3D modeli yükler. Yükleme tamamlandıktan sonra, en önemli adım olarak, `petType.configuration`'dan gelen özel ölçek, pozisyon ve rotasyon ayarlarını modele uygular. Ardından, modelin animasyonlarını oynatır.
+- **Diğer Dosyalarla Etkileşimi:** `MainGameView`, `CharacterCreationView` ve tüm interaktif mini oyunlar (`Washing...`, `Loving...`) tarafından hayvanı ekranda göstermek için kullanılır.
+
+**`MainGameView.swift`**
+- **Genel Sorumluluk:** Kullanıcının oyunla etkileşime girdiği ana merkezdir.
+- **Detaylı Analiz:** `@EnvironmentObject` ile `PetViewModel`'e bağlanarak tüm oyun durumunu ve fonksiyonlarını alır. Hayvanın ihtiyaçlarını (`NeedView` alt görünümü ile), seviyesini ve parasını gösterir. `Button`'lar, `viewModel` üzerindeki `feed`, `lovePet` gibi fonksiyonları tetikler. `.sheet(isPresented: ...)` modifier'ları, `@State` değişkenlerini kullanarak farklı mini oyun `View`'lerini modal olarak açar. Arayüz, `VStack` ve `HStack` kullanılarak organize edilmiştir.
+
+**Mini Oyun View'leri (`LovingMinigameView`, `WashingMinigameView`, `MazeMinigameView`)**
+- **Genel Sorumluluk:** Her biri kendi içinde bağımsız, kısa ve eğlenceli bir oyun deneyimi sunar.
+- **Detaylı Analiz:**
+    - `Loving` ve `Washing` View'leri, `TimelineView` ve `DragGesture` kullanarak akıcı, parçacık tabanlı animasyonlar oluşturur. Kullanıcının parmak hareketiyle `Particle` nesneleri yaratılır ve `TimelineView`'in her tikinde bu parçacıkların pozisyonu güncellenerek yukarı doğru hareket etmeleri sağlanır.
+    - `MazeMinigameView`, iki boyutlu bir `Int` dizisi (`[[Int]]`) ile labirentin haritasını tutar. Kullanıcının butonlara basmasıyla `movePlayer` fonksiyonu tetiklenir, bu fonksiyon oyuncunun yeni pozisyonunu hesaplar, duvar kontrolü yapar ve dizi üzerindeki değerleri güncelleyerek `View`'in yeniden çizilmesini ve oyuncunun yeni yerinde görünmesini sağlar.
+    - Hepsi, oyun bittiğinde sonucu ana ekrana bildirmek için bir `onEnd` (Closure) parametresi alır.
+
+**`CharacterCreationView.swift`**
+- **Genel Sorumluluk:** Oyuncunun oyuna ilk başlangıç deneyimini yönetir.
+- **Detaylı Analiz:** Oyuncunun bir isim girmesi için bir `TextField`, hayvan türünü seçmesi için bir `Picker` sunar. Seçilen `PetType`'a göre `ModelView`'i güncelleyerek canlı bir önizleme gösterir. "Yarat" butonuna tıklandığında, girilen bilgilerle yeni bir `Pet` nesnesi oluşturur ve bunu `onPetCreated` closure'ı aracılığıyla `ContentView`'e geri gönderir.
+
+---
+
+### BÖLÜM 3: UYGULAMA YAŞAM DÖNGÜSÜ
+
+**`AppDelegate.swift`**
+- **Genel Sorumluluk:** Geleneksel UIKit yaşam döngüsü olaylarını yönetir.
+- **Detaylı Analiz:** `applicationDidBecomeActive` fonksiyonu, uygulama kullanıcı tarafından aktif olarak kullanılmaya başlandığında (açıldığında veya arka plandan geldiğinde) tetiklenir. Bu an, `GameCenterManager.shared.authenticatePlayer`'ı çağırmak için en uygun zamandır, böylece kullanıcı oyuna her döndüğünde Game Center'a bağlı kalması sağlanır.
+
+**`ContentView.swift`**
+- **Genel Sorumluluk:** Uygulamanın kök (root) `View`'idir ve hangi ana ekranın gösterileceğine karar verir.
+- **Detaylı Analiz:** Uygulama başlar başlamaz `PetViewModel`'deki `pet` değişkenini kontrol eder.
+    - Eğer `pet` `nil` ise (yani `UserDefaults`'te kayıtlı bir hayvan bulunamamışsa), bu, oyuncunun ilk defa oynadığı anlamına gelir ve `CharacterCreationView` gösterilir. `onPetCreated` closure'ı sayesinde, hayvan yaratıldığında `viewModel.pet` güncellenir ve `ContentView` otomatik olarak `MainGameView`'e geçer.
+    - Eğer `pet` `nil` değilse, kayıtlı bir oyun bulunduğu için doğrudan `MainGameView` gösterilir.
+    Bu basit ama güçlü mantık, oyunun başlangıç akışını tamamen yönetir. 

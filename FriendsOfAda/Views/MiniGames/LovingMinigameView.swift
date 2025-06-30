@@ -26,11 +26,11 @@ struct LovingMinigameView: View {
                 Color.pink.opacity(0.2).ignoresSafeArea()
                 
                 VStack {
-                    Text("Evcil Hayvanını Sev!")
+                    Text("Love Your Pet!")
                         .font(.largeTitle)
                         .padding()
                     
-                    Text("Kalpler çıkarmak için üzerinde parmağını gezdir!")
+                    Text("Move your finger over it to release hearts!")
                         .font(.headline)
                         .foregroundColor(.secondary)
                     
@@ -64,7 +64,7 @@ struct LovingMinigameView: View {
                     }
                     
                     // Progress Bar
-                    ProgressView("Sevgi", value: progress, total: 1.0)
+                    ProgressView("Love", value: progress, total: 1.0)
                         .padding()
                         .accentColor(.pink)
 
@@ -73,7 +73,7 @@ struct LovingMinigameView: View {
                         onEnd() // Call the completion handler
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text("Bitti")
+                        Text("Done")
                             .font(.title2)
                             .padding()
                             .frame(maxWidth: .infinity)

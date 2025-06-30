@@ -209,6 +209,10 @@ struct MainGameView: View {
                             HStack {
                                 Button("+50 HP") { viewModel.addHappinessPoints(50) }
                                 Button("Level Up") { viewModel.forceLevelUp() }
+                                Button("Fill Energy") { viewModel.fillEnergy() }
+                            }
+                            .buttonStyle(TestButtonStyle())
+                            HStack {
                                 Button("+1000 Coin") { viewModel.addDebugCoins() }
                                 Button("Reset") { viewModel.resetGame() }
                             }
